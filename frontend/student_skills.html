@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PlacementOS - Skill Gap & Roadmap</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+</head>
+<body>
+  <div class="bg-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+  </div>
+
+  <div class="layout">
+    <aside class="sidebar">
+        <div class="sidebar-brand">PlacementOS</div>
+        <a href="/student/dashboard" class="nav-item"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+        <a href="/student/readiness" class="nav-item"><i data-lucide="activity"></i> Placement Readiness</a>`n        <a href="/student/resume" class="nav-item"><i data-lucide="file-text"></i> Resume Intelligence</a>
+        <a href="/student/skills" class="nav-item active"><i data-lucide="compass"></i> Skill Gap & Roadmap</a>
+        <a href="/student/jobs" class="nav-item"><i data-lucide="briefcase"></i> Job Matches</a>
+        <a href="/student/applications" class="nav-item"><i data-lucide="check-square"></i> Applications</a>
+        <a href="/student/interview" class="nav-item"><i data-lucide="mic"></i> Mock Interviews</a>
+        <div style="flex: 1;"></div>
+        <a href="#" id="logoutBtn" class="nav-item"><i data-lucide="log-out"></i> Logout</a>
+    </aside>
+    
+    <main class="main-panel">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <h2>Personalized Career Roadmap</h2>
+        </div>
+        
+        <!-- Controls -->
+        <div class="card glass mb-4">
+            <h3 class="mb-4">Generate New Roadmap</h3>
+            <div style="display: flex; gap: 1rem; align-items: flex-end;">
+                <div class="input-group" style="flex: 1; margin: 0;">
+                    <label class="input-label">Target Role</label>
+                    <input type="text" id="targetRole" class="glass-input" placeholder="e.g. Full Stack Developer, Data Scientist">
+                </div>
+                <div class="input-group" style="flex: 2; margin: 0;">
+                    <label class="input-label">Required Target Skills (Comma separated)</label>
+                    <input type="text" id="targetSkills" class="glass-input" placeholder="e.g. React, Node.js, Docker, AWS">
+                </div>
+                <button class="btn btn-primary" id="generateBtn" style="height: 42px;"><i data-lucide="zap"></i> Generate with AI</button>
+            </div>
+            <p id="genStatus" class="text-secondary mt-2" style="display: none;"><i data-lucide="loader" class="spin"></i> AI is analyzing skill gaps and planning roadmap...</p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem;">
+            <!-- Left Column: Skill Gap -->
+            <div>
+                <div class="card glass" style="margin-bottom: 1.5rem;">
+                    <h3 class="mb-2" style="display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="target" color="var(--primary-color)"></i> Skill Gap Analysis</h3>
+                    <div id="skillGapContainer">
+                        <p class="text-secondary">Provide a target role and skills to see your gaps.</p>
+                    </div>
+                </div>
+
+                <div class="card glass text-center">
+                    <h3 class="mb-2">Roadmap Progress</h3>
+                    <div style="width: 140px; height: 140px; border-radius: 50%; background: conic-gradient(var(--accent-color) 0%, transparent 0); display: flex; align-items: center; justify-content: center; position: relative; margin: 0 auto;" id="progressCircle">
+                        <div style="width: 120px; height: 120px; border-radius: 50%; background: var(--card-bg); display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                            <span id="progressText" style="font-size: 2.2rem; font-weight: 800; color: var(--accent-color);">0%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Roadmap Items -->
+            <div class="card glass">
+                <h3 class="mb-4" style="display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="map" color="var(--secondary-color)"></i> Learning Roadmap</h3>
+                <div id="roadmapContainer" style="display: flex; flex-direction: column; gap: 0;">
+                    <p class="text-secondary">Loading roadmap items...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+  </div>
+
+  <script>
+    lucide.createIcons();
+    let currentResumeSkills = [];
+    
+    document.getElementById('logoutBtn').addEventListener('click', async (e) => {
+        e.preventDefault();
+        await fetch('/api/auth/logout', { method: 'POST' });
+        window.location.href = '/login';
+    });
+
+    async function fetchMySkills() {
+        try {
+            const res = await fetch('/api/resume');
+            const data = await res.json();
+            if (data && data.skills) {
+                currentResumeSkills = JSON.parse(data.skills).map(s => s.toLowerCase());
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    async function loadRoadmap() {
+        try {
+            const res = await fetch('/api/roadmap');
+            const items = await res.json();
+            
+            const container = document.getElementById('roadmapContainer');
+            container.innerHTML = '';
+            
+            if (items.length === 0) {
+                container.innerHTML = '<p class="text-secondary">Your roadmap is empty. Generate one above!</p>';
+                return;
+            }
+
+            let completed = 0;
+            items.forEach(item => {
+                if (item.status === 'COMPLETED') completed++;
+                container.innerHTML += `
+                    <div class="roadmap-item ${item.status === 'COMPLETED' ? 'completed' : ''}">
+                        <input type="checkbox" ${item.status === 'COMPLETED' ? 'checked' : ''} onchange="toggleItem(${item.id}, this.checked)" style="margin-top: 5px; cursor: pointer; width: 18px; height: 18px;">
+                        <div style="flex: 1;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                <h4 style="margin-bottom: 0.2rem; color: var(--primary-color);">${item.title}</h4>
+                                <span class="priority-badge priority-${item.priority}">${item.priority} Priority</span>
+                            </div>
+                            <span class="category-badge mb-2" style="display: inline-block;">${item.category}</span>
+                            <p class="text-secondary" style="font-size: 0.9rem;">${item.description}</p>
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Update Progress
+            const progress = Math.round((completed / items.length) * 100) || 0;
+            document.getElementById('progressText').textContent = progress + '%';
+            document.getElementById('progressCircle').style.background = `conic-gradient(var(--accent-color) ${progress}%, transparent 0)`;
+
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    async function toggleItem(id, isChecked) {
+        const status = isChecked ? 'COMPLETED' : 'PENDING';
+        await fetch(`/api/roadmap/${id}/status`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status })
+        });
+        loadRoadmap();
+    }
+
+    // AI Generation
+    async function callGemini(prompt) {
+        const apiKey = localStorage.getItem('geminiApiKey');
+        if (!apiKey || apiKey.includes('demo')) {
+            // Mock response if no key
+            return `[
+                {"title": "Learn Docker Basics", "description": "Understand containers, images, and basic docker-compose.", "priority": "HIGH", "category": "DevOps"},
+                {"title": "AWS Fundamentals", "description": "Familiarize yourself with EC2, S3, and IAM roles.", "priority": "HIGH", "category": "Cloud"},
+                {"title": "Integration Testing", "description": "Write automated tests using Jest and Supertest.", "priority": "MEDIUM", "category": "Testing"}
+            ]`;
+        }
+        
+        try {
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+            });
+            const data = await response.json();
+            return data.candidates[0].content.parts[0].text;
+        } catch (e) {
+            console.error(e);
+            return "[]";
+        }
+    }
+
+    document.getElementById('generateBtn').addEventListener('click', async () => {
+        const targetRole = document.getElementById('targetRole').value;
+        const targetSkillsInput = document.getElementById('targetSkills').value;
+        
+        if (!targetRole || !targetSkillsInput) return alert("Please provide a target role and skills");
+        
+        const targetSkills = targetSkillsInput.split(',').map(s => s.trim().toLowerCase());
+        
+        const missingSkills = targetSkills.filter(s => !currentResumeSkills.includes(s));
+        const matchedSkills = targetSkills.filter(s => currentResumeSkills.includes(s));
+
+        // Update Gap UI
+        const gapContainer = document.getElementById('skillGapContainer');
+        gapContainer.innerHTML = `
+            <div style="margin-bottom: 1rem;">
+                <h4 style="color: #10b981; margin-bottom: 0.5rem; font-size: 0.9rem;">Matched Skills</h4>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                    ${matchedSkills.map(s => `<span class="tech-badge" style="background: rgba(16, 185, 129, 0.1); color: #10b981; border-color: #10b981;">${s}</span>`).join('') || '<span class="text-secondary">None</span>'}
+                </div>
+            </div>
+            <div>
+                <h4 style="color: #ef4444; margin-bottom: 0.5rem; font-size: 0.9rem;">Missing Skills</h4>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                    ${missingSkills.map(s => `<span class="tech-badge" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border-color: #ef4444;">${s}</span>`).join('') || '<span class="text-secondary">None</span>'}
+                </div>
+            </div>
+        `;
+
+        if (missingSkills.length === 0) {
+            alert("You already have all the target skills!");
+            return;
+        }
+
+        document.getElementById('genStatus').style.display = 'block';
+        document.getElementById('generateBtn').disabled = true;
+
+        const prompt = `Act as a senior career counselor. A student wants to become a ${targetRole}. They are missing the following skills: ${missingSkills.join(', ')}. 
+        Generate a learning roadmap as a JSON array. Each object must have exactly these keys:
+        - "title": (String) A short actionable learning goal
+        - "description": (String) A 1-sentence description of what to focus on
+        - "priority": (String) Must be "HIGH", "MEDIUM", or "LOW"
+        - "category": (String) Must be one of: "Programming", "Frameworks", "Database", "Cloud", "DevOps", "Testing", "Tools", "Soft Skills"
+        
+        Return ONLY valid JSON array.`;
+
+        const aiText = await callGemini(prompt);
+        
+        try {
+            let clean = aiText.replace(/```json/g, '').replace(/```/g, '').trim();
+            const items = JSON.parse(clean);
+            
+            // Save to backend
+            await fetch('/api/roadmap', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ targetRole, items })
+            });
+
+            loadRoadmap();
+        } catch(e) {
+            console.error("AI Error", e);
+            alert("Error parsing AI response. Please try again.");
+        }
+
+        document.getElementById('genStatus').style.display = 'none';
+        document.getElementById('generateBtn').disabled = false;
+    });
+
+    async function init() {
+        await fetchMySkills();
+        loadRoadmap();
+    }
+    
+    init();
+
+  </script>
+</body>
+</html>
+

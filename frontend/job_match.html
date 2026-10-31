@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PlacementOS - Job Match Analysis</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+</head>
+<body>
+  <div class="bg-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+  </div>
+
+  <div class="layout">
+    <aside class="sidebar">
+        <div class="sidebar-brand">PlacementOS</div>
+        <a href="/student/dashboard" class="nav-item"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+        <a href="/student/readiness" class="nav-item"><i data-lucide="activity"></i> Placement Readiness</a>`n        <a href="/student/resume" class="nav-item"><i data-lucide="file-text"></i> Resume Intelligence</a>
+        <a href="/student/skills" class="nav-item"><i data-lucide="compass"></i> Skill Gap & Roadmap</a>
+        <a href="/student/jobs" class="nav-item active"><i data-lucide="briefcase"></i> Job Matches</a>
+        <a href="/student/applications" class="nav-item"><i data-lucide="check-square"></i> Applications</a>
+        <a href="/student/interview" class="nav-item"><i data-lucide="mic"></i> Mock Interviews</a>
+        <div style="flex: 1;"></div>
+        <a href="#" id="logoutBtn" class="nav-item"><i data-lucide="log-out"></i> Logout</a>
+    </aside>
+    
+    <main class="main-panel">
+        <a href="/student/jobs" style="color: var(--primary-color); display: inline-flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;"><i data-lucide="arrow-left" width="16"></i> Back to Jobs</a>
+        
+        <div id="loadingState" class="text-center py-4">
+            <h3 class="text-secondary"><i data-lucide="loader" class="spin"></i> AI is analyzing your fit for this role...</h3>
+        </div>
+
+        <div id="errorState" class="text-center py-4" style="display: none; color: #ef4444;">
+            <h3>Error loading match analysis. Do you have a resume saved?</h3>
+            <a href="/student/resume" class="btn btn-primary mt-2">Go to Resume Intelligence</a>
+        </div>
+
+        <div id="matchContent" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
+                <div>
+                    <h2 id="jobTitle">Job Title</h2>
+                    <p class="text-secondary" id="jobCompany" style="font-size: 1.1rem; margin-bottom: 0.5rem;">Company Name</p>
+                    <span style="font-size: 0.8rem; color: var(--text-secondary);">*Match score is an AI estimate of resume alignment, not a guarantee of hiring.</span>
+                </div>
+                <button class="btn btn-primary pulse-btn" id="applyBtn"><i data-lucide="send"></i> Apply Now</button>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem; margin-bottom: 2rem;">
+                <div class="card glass text-center" style="display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                    <h3 class="mb-2">Overall Match</h3>
+                    <div style="width: 140px; height: 140px; border-radius: 50%; background: conic-gradient(var(--secondary-color) 0%, transparent 0); display: flex; align-items: center; justify-content: center; position: relative;" id="scoreCircle">
+                        <div style="width: 120px; height: 120px; border-radius: 50%; background: var(--card-bg); display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                            <span id="scoreText" style="font-size: 2.2rem; font-weight: 800; color: var(--secondary-color);">0%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card glass">
+                    <h3 class="mb-4" style="display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="brain-circuit" color="var(--primary-color)"></i> Semantic AI Analysis</h3>
+                    <div id="aiExplanation" class="text-secondary" style="font-size: 0.95rem; line-height: 1.6; max-height: 200px; overflow-y: auto; padding-right: 1rem;">
+                        Loading explanation...
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                <div class="card glass">
+                    <h3 class="mb-2" style="display: flex; align-items: center; gap: 0.5rem; color: #10b981;"><i data-lucide="check-circle"></i> Matched Skills</h3>
+                    <div id="matchedSkills" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem;"></div>
+                    
+                    <h3 class="mb-2 mt-4" style="display: flex; align-items: center; gap: 0.5rem; color: #f59e0b;"><i data-lucide="alert-circle"></i> Partial/Weak Matches</h3>
+                    <p class="text-secondary" style="font-size: 0.85rem;">Skills you have, but lack strong project evidence.</p>
+                </div>
+
+                <div class="card glass">
+                    <h3 class="mb-2" style="display: flex; align-items: center; gap: 0.5rem; color: #ef4444;"><i data-lucide="x-circle"></i> Missing Required Skills</h3>
+                    <div id="missingSkills" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem;"></div>
+                    
+                    <h3 class="mb-2 mt-4" style="display: flex; align-items: center; gap: 0.5rem; color: var(--accent-color)"><i data-lucide="arrow-up-circle"></i> Recommended Improvements</h3>
+                    <ul id="recommendations" style="font-size: 0.9rem; color: var(--text-secondary); padding-left: 1rem;">
+                        <li>Add specific metrics to your latest project.</li>
+                        <li>Highlight cloud deployment experience.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </main>
+  </div>
+
+  <script>
+    lucide.createIcons();
+    const jobId = window.location.pathname.split('/').pop();
+    
+    // Fallback Gemini Caller if app.js is not loaded
+    async function callGemini(prompt) {
+        const apiKey = localStorage.getItem('geminiApiKey');
+        if (!apiKey || apiKey.includes('demo')) {
+            // Demo mode simulation
+            return `{"score": 75, "explanation": "You have a solid foundation in the required frontend skills, but lack explicit backend evidence mentioned in the job description. Your React experience aligns well.", "recommendations": ["Highlight Node.js projects", "Add AWS deployment details"]}`;
+        }
+        
+        try {
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }] }]
+                })
+            });
+            const data = await response.json();
+            return data.candidates[0].content.parts[0].text;
+        } catch (e) {
+            return `{"score": 50, "explanation": "API Error: ${e.message}", "recommendations": []}`;
+        }
+    }
+
+    async function initMatch() {
+        try {
+            // 1. Fetch Job
+            const jobRes = await fetch(`/api/jobs/${jobId}`);
+            if (!jobRes.ok) throw new Error('Job not found');
+            const job = await jobRes.json();
+            
+            // 2. Fetch Resume Profile
+            const resumeRes = await fetch('/api/resume');
+            const resume = await resumeRes.json();
+            
+            if (!resume || !resume.rawText) {
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('errorState').style.display = 'block';
+                return;
+            }
+
+            document.getElementById('jobTitle').textContent = job.title;
+            document.getElementById('jobCompany').textContent = job.company;
+
+            // 3. Compare Skills (Basic Intersection)
+            const reqSkills = JSON.parse(job.requiredSkills || "[]").map(s => s.toLowerCase());
+            const mySkills = JSON.parse(resume.skills || "[]").map(s => s.toLowerCase());
+            
+            const matched = reqSkills.filter(s => mySkills.includes(s));
+            const missing = reqSkills.filter(s => !mySkills.includes(s));
+            
+            const matchedContainer = document.getElementById('matchedSkills');
+            matched.forEach(s => {
+                matchedContainer.innerHTML += `<span class="tech-badge" style="background: rgba(16, 185, 129, 0.1); color: #10b981; border-color: #10b981;">${s}</span>`;
+            });
+            if (matched.length === 0) matchedContainer.innerHTML = '<span class="text-secondary">None found.</span>';
+
+            const missingContainer = document.getElementById('missingSkills');
+            missing.forEach(s => {
+                missingContainer.innerHTML += `<span class="tech-badge" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border-color: #ef4444;">${s}</span>`;
+            });
+            if (missing.length === 0) missingContainer.innerHTML = '<span class="text-secondary">No critical missing skills.</span>';
+
+            // 4. AI Deep Analysis
+            const prompt = `Analyze this Resume against this Job Description. 
+            Return strictly valid JSON: 
+            {
+                "score": 85, 
+                "explanation": "Detailed paragraph explaining the match...", 
+                "recommendations": ["Improvement 1", "Improvement 2"]
+            }
+            
+            Resume: ${resume.rawText.substring(0, 3000)}
+            Job Description: ${job.description.substring(0, 2000)}`;
+
+            const aiText = await callGemini(prompt);
+            let aiResult = { score: 65, explanation: "Fallback explanation based on skills match.", recommendations: ["Add more keywords"] };
+            try {
+                let clean = aiText.replace(/```json/g, '').replace(/```/g, '').trim();
+                aiResult = JSON.parse(clean);
+            } catch (e) { console.error("JSON parse failed", e); }
+
+            // 5. Update UI
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('matchContent').style.display = 'block';
+
+            let score = aiResult.score || Math.round((matched.length / Math.max(reqSkills.length, 1)) * 100);
+            let color = score >= 80 ? '#10b981' : (score >= 50 ? '#f59e0b' : '#ef4444');
+            
+            document.getElementById('scoreText').textContent = score + '%';
+            document.getElementById('scoreText').style.color = color;
+            document.getElementById('scoreCircle').style.background = `conic-gradient(${color} ${score}%, transparent 0)`;
+            
+            document.getElementById('aiExplanation').innerHTML = aiResult.explanation;
+            
+            const recList = document.getElementById('recommendations');
+            recList.innerHTML = '';
+            if (aiResult.recommendations) {
+                aiResult.recommendations.forEach(r => {
+                    recList.innerHTML += `<li>${r}</li>`;
+                });
+            }
+
+            document.getElementById('applyBtn').onclick = async () => {
+                const res = await fetch(`/api/jobs/${jobId}/apply`, { method: 'POST' });
+                if (res.ok) {
+                    alert("Applied Successfully!");
+                    document.getElementById('applyBtn').innerHTML = `<i data-lucide="check"></i> Applied`;
+                    document.getElementById('applyBtn').disabled = true;
+                    lucide.createIcons();
+                }
+            };
+            
+        } catch (e) {
+            console.error(e);
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('errorState').style.display = 'block';
+        }
+    }
+
+    initMatch();
+  </script>
+</body>
+</html>
+

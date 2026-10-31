@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PlacementOS - Placement Readiness</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+</head>
+<body>
+  <div class="bg-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+  </div>
+
+  <div class="layout">
+    <aside class="sidebar">
+        <div class="sidebar-brand">PlacementOS</div>
+        <a href="/student/dashboard" class="nav-item"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+        <a href="/student/readiness" class="nav-item active"><i data-lucide="activity"></i> Placement Readiness</a>
+        <a href="/student/readiness" class="nav-item"><i data-lucide="activity"></i> Placement Readiness</a>`n        <a href="/student/resume" class="nav-item"><i data-lucide="file-text"></i> Resume Intelligence</a>
+        <a href="/student/skills" class="nav-item"><i data-lucide="compass"></i> Skill Gap & Roadmap</a>
+        <a href="/student/jobs" class="nav-item"><i data-lucide="briefcase"></i> Job Matches</a>
+        <a href="/student/applications" class="nav-item"><i data-lucide="check-square"></i> Applications</a>
+        <a href="/student/interview" class="nav-item"><i data-lucide="mic"></i> Mock Interviews</a>
+        <div style="flex: 1;"></div>
+        <a href="#" id="logoutBtn" class="nav-item"><i data-lucide="log-out"></i> Logout</a>
+    </aside>
+    
+    <main class="main-panel">
+        <div class="disclaimer">
+            <i data-lucide="alert-circle" width="18" style="flex-shrink: 0;"></i>
+            <div>
+                <strong>Important:</strong> This is NOT an employment prediction system. We do not predict your chances of getting hired. 
+                This system objectively measures your preparation indicators based on completed activities (resume, practice, skill building) to generate a readiness score.
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem; align-items: flex-start;">
+            
+            <!-- Left Col: Overall Score & Action Plan -->
+            <div style="display: flex; flex-direction: column; gap: 2rem;">
+                <div class="card glass text-center">
+                    <h3 class="mb-4">Overall Readiness Score</h3>
+                    <div class="score-circle" id="overallCircle" style="background: conic-gradient(var(--accent-color) 0%, transparent 0);">
+                        <div class="score-circle-inner">
+                            <span class="score-text" id="overallScore">0/100</span>
+                        </div>
+                    </div>
+                    <p class="text-secondary mt-4">Your current preparation indicators show a <span id="overallText" style="color:var(--text-primary); font-weight:bold;">0/100</span> readiness score.</p>
+                </div>
+
+                <div class="card glass">
+                    <h4 style="color: #10b981; margin-bottom: 0.5rem; display: flex; align-items:center; gap:0.5rem;"><i data-lucide="thumbs-up" width="16"></i> Strengths</h4>
+                    <ul id="strengthsList" style="font-size: 0.9rem; padding-left: 1.2rem; color: var(--text-secondary); margin-bottom: 1.5rem;"></ul>
+
+                    <h4 style="color: #f59e0b; margin-bottom: 0.5rem; display: flex; align-items:center; gap:0.5rem;"><i data-lucide="trending-up" width="16"></i> Areas to Improve</h4>
+                    <ul id="improvementsList" style="font-size: 0.9rem; padding-left: 1.2rem; color: var(--text-secondary); margin-bottom: 1.5rem;"></ul>
+
+                    <h4 style="color: var(--primary-color); margin-bottom: 0.5rem; display: flex; align-items:center; gap:0.5rem;"><i data-lucide="arrow-right-circle" width="16"></i> Recommended Actions</h4>
+                    <ul id="actionsList" style="font-size: 0.9rem; padding-left: 1.2rem; color: var(--text-secondary);"></ul>
+                </div>
+            </div>
+
+            <!-- Right Col: Component Breakdown -->
+            <div class="card glass">
+                <h3 class="mb-4">Component Breakdown</h3>
+                <p class="text-secondary mb-4" style="font-size: 0.9rem;">Understanding exactly where your score comes from. No hidden algorithms.</p>
+                
+                <div id="componentsContainer">
+                    <p class="text-center text-secondary py-4"><i data-lucide="loader" class="spin"></i> Calculating your preparation metrics...</p>
+                </div>
+            </div>
+
+        </div>
+    </main>
+  </div>
+
+  <script>
+    lucide.createIcons();
+    document.getElementById('logoutBtn').addEventListener('click', async (e) => {
+        e.preventDefault();
+        await fetch('/api/auth/logout', { method: 'POST' });
+        window.location.href = '/login';
+    });
+
+    async function loadReadiness() {
+        try {
+            const res = await fetch('/api/student/readiness');
+            if(!res.ok) throw new Error("Failed");
+            const data = await res.json();
+            
+            // Overall
+            document.getElementById('overallScore').textContent = data.overallScore;
+            document.getElementById('overallText').textContent = data.overallScore;
+            document.getElementById('overallCircle').style.background = `conic-gradient(var(--accent-color) ${data.overallScore}%, transparent 0)`;
+            
+            // Action Plan
+            document.getElementById('strengthsList').innerHTML = data.strengths.map(s => `<li>${s}</li>`).join('');
+            document.getElementById('improvementsList').innerHTML = data.improvements.map(i => `<li>${i}</li>`).join('');
+            document.getElementById('actionsList').innerHTML = data.nextActions.map(a => `<li>${a}</li>`).join('');
+
+            // Components
+            const compContainer = document.getElementById('componentsContainer');
+            compContainer.innerHTML = '';
+            
+            data.components.forEach(comp => {
+                compContainer.innerHTML += `
+                    <div class="component-card">
+                        <div class="component-header">
+                            <h4 style="margin: 0;">${comp.name}</h4>
+                            <span class="component-score">${comp.score}</span>
+                        </div>
+                        <p style="font-size: 0.9rem; color: var(--text-secondary); margin: 0;">
+                            <strong>Reason:</strong> ${comp.reason}
+                        </p>
+                    </div>
+                `;
+            });
+        } catch(e) {
+            console.error(e);
+            document.getElementById('componentsContainer').innerHTML = '<p class="text-center" style="color: #ef4444;">Could not load readiness metrics.</p>';
+        }
+    }
+
+    loadReadiness();
+  </script>
+</body>
+</html>
+

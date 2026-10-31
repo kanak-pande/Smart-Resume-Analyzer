@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PlacementOS - Recruiter Dashboard</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+</head>
+<body>
+  <div class="bg-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+  </div>
+
+  <div class="layout">
+    <aside class="sidebar">
+        <div class="sidebar-brand">PlacementOS<br><span style="font-size:0.8rem; color:var(--text-secondary);">Recruiter</span></div>
+        <div class="nav-item active" onclick="switchTab('dashboard')"><i data-lucide="layout-dashboard"></i> Overview</div>
+        <div class="nav-item" onclick="switchTab('jobs')"><i data-lucide="briefcase"></i> Job Openings</div>
+        <div class="nav-item" onclick="switchTab('profile')"><i data-lucide="building"></i> Company Profile</div>
+        <div style="flex: 1;"></div>
+        <div class="nav-item" id="logoutBtn"><i data-lucide="log-out"></i> Logout</div>
+    </aside>
+    
+    <main class="main-panel">
+        
+        <!-- Dashboard Overview -->
+        <div id="view-dashboard" class="view-section active">
+            <h2 class="mb-4">Welcome back, Recruiter</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                <div class="card glass text-center">
+                    <h3 class="mb-2"><i data-lucide="briefcase"></i> Active Jobs</h3>
+                    <h1 id="statJobs" style="color: var(--primary-color);">0</h1>
+                </div>
+                <div class="card glass text-center">
+                    <h3 class="mb-2"><i data-lucide="users"></i> Total Applicants</h3>
+                    <h1 id="statApps" style="color: var(--accent-color);">0</h1>
+                </div>
+            </div>
+            <div class="mt-4 text-center">
+                <button class="btn btn-primary" onclick="switchTab('jobs')">Manage Job Postings</button>
+            </div>
+        </div>
+
+        <!-- Profile Settings -->
+        <div id="view-profile" class="view-section">
+            <h2 class="mb-4">Company Profile</h2>
+            <div class="card glass" style="max-width: 500px;">
+                <div class="input-group">
+                    <label class="input-label">Company Name</label>
+                    <input type="text" id="profCompany" class="glass-input">
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Your Designation</label>
+                    <input type="text" id="profDesig" class="glass-input">
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Contact Email/Phone</label>
+                    <input type="text" id="profContact" class="glass-input">
+                </div>
+                <button class="btn btn-primary" id="saveProfileBtn">Save Profile</button>
+            </div>
+        </div>
+
+        <!-- Jobs Management -->
+        <div id="view-jobs" class="view-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <h2>Job Openings</h2>
+                <button class="btn btn-primary" onclick="openJobModal()">+ Create Job</button>
+            </div>
+            <div class="card glass">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Job Title</th>
+                            <th>Location</th>
+                            <th>Status</th>
+                            <th>Applicants</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="jobsTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Candidates View (Nested inside Jobs logically, but shown as a main view) -->
+        <div id="view-candidates" class="view-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <div>
+                    <button class="btn btn-secondary mb-2" onclick="switchTab('jobs')" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;"><i data-lucide="arrow-left"></i> Back to Jobs</button>
+                    <h2 id="candJobTitle">Candidates</h2>
+                </div>
+            </div>
+            <div class="card glass">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Candidate Name</th>
+                            <th>Score</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="candTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+  </div>
+
+  <!-- Job Modal -->
+  <div id="jobModal" class="modal">
+      <div class="modal-content">
+          <h3 class="mb-4" id="jobModalTitle">Create Job Opening</h3>
+          <div class="input-group"><label class="input-label">Job Title</label><input type="text" id="jobTitle" class="glass-input" style="background:var(--card-bg);"></div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="input-group"><label class="input-label">Location</label><input type="text" id="jobLocation" class="glass-input" style="background:var(--card-bg);"></div>
+              <div class="input-group"><label class="input-label">Employment Type</label><input type="text" id="jobType" class="glass-input" style="background:var(--card-bg);"></div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="input-group"><label class="input-label">Required Experience</label><input type="text" id="jobExp" class="glass-input" style="background:var(--card-bg);"></div>
+              <div class="input-group"><label class="input-label">Salary (Optional)</label><input type="text" id="jobSalary" class="glass-input" style="background:var(--card-bg);"></div>
+          </div>
+          <div class="input-group"><label class="input-label">Required Skills (Comma separated)</label><input type="text" id="jobReqSkills" class="glass-input" style="background:var(--card-bg);"></div>
+          <div class="input-group"><label class="input-label">Preferred Skills (Comma separated)</label><input type="text" id="jobPrefSkills" class="glass-input" style="background:var(--card-bg);"></div>
+          <div class="input-group"><label class="input-label">Job Description</label><textarea id="jobDesc" class="glass-input" rows="4" style="background:var(--card-bg);"></textarea></div>
+          <div class="input-group" id="jobStatusGroup" style="display: none;">
+              <label class="input-label">Status</label>
+              <select id="jobStatus" class="glass-input" style="background:var(--card-bg);"><option value="OPEN">OPEN</option><option value="CLOSED">CLOSED</option></select>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+              <button class="btn btn-secondary" onclick="document.getElementById('jobModal').style.display='none'">Cancel</button>
+              <button class="btn btn-primary" id="saveJobBtn">Save Job</button>
+          </div>
+      </div>
+  </div>
+
+  <!-- Candidate Review Modal -->
+  <div id="candModal" class="modal">
+      <div class="modal-content">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;" class="mb-4">
+              <h3 id="candName">Candidate Name</h3>
+              <select id="candStatus" class="glass-input" style="width: auto; background: var(--card-bg); padding: 0.3rem 1rem; border-color: var(--primary-color);">
+                  <option value="APPLIED">Applied</option>
+                  <option value="ASSESSMENT">Assessment</option>
+                  <option value="INTERVIEW">Interview (Shortlist)</option>
+                  <option value="SELECTED">Selected</option>
+                  <option value="REJECTED">Rejected</option>
+              </select>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+              <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px;">
+                  <h4 class="text-secondary mb-2" style="font-size: 0.8rem;">Candidate Skills</h4>
+                  <p id="candSkills" style="font-size: 0.9rem;">-</p>
+              </div>
+          </div>
+
+          <div class="card" style="background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); padding: 1rem; margin-bottom: 1rem;">
+              <h4 style="color: var(--accent-color); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                  <i data-lucide="zap"></i> AI Candidate Match Analysis
+              </h4>
+              <p class="text-secondary mb-2" style="font-size: 0.8rem;">Objective matching based on job requirements. Does not make hiring decisions.</p>
+              <div id="aiMatchContent" style="display: none;">
+                  <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                      <div style="flex: 1;"><h5 style="color: #10b981;">Matched Requirements</h5><ul id="aiMatch" style="font-size: 0.85rem; padding-left: 1rem; margin-top:0.3rem;"></ul></div>
+                      <div style="flex: 1;"><h5 style="color: #ef4444;">Missing Requirements</h5><ul id="aiMiss" style="font-size: 0.85rem; padding-left: 1rem; margin-top:0.3rem;"></ul></div>
+                  </div>
+                  <h5 style="color: var(--primary-color);">Relevant Experience</h5>
+                  <p id="aiExp" style="font-size: 0.85rem;"></p>
+              </div>
+              <button class="btn btn-secondary mt-2" id="runAiBtn" style="width: 100%; justify-content: center;">Run AI Match Analysis</button>
+              <p id="aiLoad" class="text-center text-secondary mt-2" style="display:none;"><i data-lucide="loader" class="spin"></i> Analyzing...</p>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end;">
+              <button class="btn btn-secondary" onclick="document.getElementById('candModal').style.display='none'">Close</button>
+          </div>
+      </div>
+  </div>
+
+  <script>
+    lucide.createIcons();
+    let currentJobs = [];
+    let currentCandidates = [];
+    let editJobId = null;
+    let currentAppId = null;
+
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+        await fetch('/api/auth/logout', { method: 'POST' });
+        window.location.href = '/login';
+    });
+
+    function switchTab(tabId) {
+        document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        
+        document.getElementById(`view-${tabId}`).classList.add('active');
+        event.currentTarget.classList.add('active');
+
+        if(tabId === 'jobs') loadJobs();
+        if(tabId === 'profile') loadProfile();
+    }
+
+    async function init() {
+        const pRes = await fetch('/api/recruiter/profile');
+        const p = await pRes.json();
+        if (!p.company) {
+            alert("Please complete your company profile first.");
+            switchTab('profile');
+        } else {
+            loadJobs();
+        }
+    }
+
+    async function loadProfile() {
+        const res = await fetch('/api/recruiter/profile');
+        const p = await res.json();
+        if (p.company) {
+            document.getElementById('profCompany').value = p.company;
+            document.getElementById('profDesig').value = p.designation;
+            document.getElementById('profContact').value = p.contact;
+        }
+    }
+
+    document.getElementById('saveProfileBtn').addEventListener('click', async () => {
+        const payload = {
+            company: document.getElementById('profCompany').value,
+            designation: document.getElementById('profDesig').value,
+            contact: document.getElementById('profContact').value
+        };
+        await fetch('/api/recruiter/profile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        alert('Profile Saved');
+    });
+
+    async function loadJobs() {
+        const res = await fetch('/api/recruiter/jobs');
+        currentJobs = await res.json();
+        
+        document.getElementById('statJobs').textContent = currentJobs.filter(j => j.status === 'OPEN').length;
+        document.getElementById('statApps').textContent = currentJobs.reduce((acc, j) => acc + j.applications.length, 0);
+
+        const tbody = document.getElementById('jobsTableBody');
+        tbody.innerHTML = '';
+        currentJobs.forEach(j => {
+            tbody.innerHTML += `
+                <tr>
+                    <td style="font-weight: 600;">${j.title}</td>
+                    <td>${j.location || 'Remote'}</td>
+                    <td><span class="badge status-${j.status}">${j.status}</span></td>
+                    <td>${j.applications.length} Applicants</td>
+                    <td>
+                        <button class="btn btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;" onclick="viewCandidates(${j.id}, '${j.title}')">View Candidates</button>
+                        <button class="btn btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; margin-left: 0.5rem;" onclick="editJob(${j.id})">Edit</button>
+                    </td>
+                </tr>
+            `;
+        });
+    }
+
+    function openJobModal() {
+        editJobId = null;
+        document.getElementById('jobModalTitle').textContent = "Create Job Opening";
+        document.getElementById('jobStatusGroup').style.display = 'none';
+        
+        ['jobTitle', 'jobLocation', 'jobType', 'jobExp', 'jobSalary', 'jobReqSkills', 'jobPrefSkills', 'jobDesc'].forEach(id => {
+            document.getElementById(id).value = '';
+        });
+        document.getElementById('jobModal').style.display = 'flex';
+    }
+
+    function editJob(id) {
+        editJobId = id;
+        const job = currentJobs.find(j => j.id === id);
+        document.getElementById('jobModalTitle').textContent = "Edit Job Opening";
+        document.getElementById('jobStatusGroup').style.display = 'block';
+        
+        document.getElementById('jobTitle').value = job.title;
+        document.getElementById('jobLocation').value = job.location || '';
+        document.getElementById('jobType').value = job.employmentType || '';
+        document.getElementById('jobExp').value = job.experience || '';
+        document.getElementById('jobSalary').value = job.salary || '';
+        document.getElementById('jobReqSkills').value = job.requiredSkills;
+        document.getElementById('jobPrefSkills').value = job.preferredSkills || '';
+        document.getElementById('jobDesc').value = job.description;
+        document.getElementById('jobStatus').value = job.status;
+        
+        document.getElementById('jobModal').style.display = 'flex';
+    }
+
+    document.getElementById('saveJobBtn').addEventListener('click', async () => {
+        const payload = {
+            title: document.getElementById('jobTitle').value,
+            location: document.getElementById('jobLocation').value,
+            employmentType: document.getElementById('jobType').value,
+            experience: document.getElementById('jobExp').value,
+            salary: document.getElementById('jobSalary').value,
+            requiredSkills: document.getElementById('jobReqSkills').value,
+            preferredSkills: document.getElementById('jobPrefSkills').value,
+            description: document.getElementById('jobDesc').value,
+            status: editJobId ? document.getElementById('jobStatus').value : 'OPEN'
+        };
+
+        const url = editJobId ? `/api/recruiter/jobs/${editJobId}` : `/api/recruiter/jobs`;
+        const method = editJobId ? 'PUT' : 'POST';
+
+        await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        
+        document.getElementById('jobModal').style.display = 'none';
+        loadJobs();
+    });
+
+    async function viewCandidates(jobId, title) {
+        document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+        document.getElementById('view-candidates').classList.add('active');
+        document.getElementById('candJobTitle').textContent = `Candidates for: ${title}`;
+
+        const res = await fetch(`/api/recruiter/jobs/${jobId}/candidates`);
+        currentCandidates = await res.json();
+
+        const tbody = document.getElementById('candTableBody');
+        tbody.innerHTML = '';
+        if(currentCandidates.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-secondary">No applicants yet.</td></tr>';
+            return;
+        }
+
+        currentCandidates.forEach(app => {
+            const student = app.student;
+            const resScore = student.resumeProfile ? student.resumeProfile.atsScore || 'N/A' : 'N/A';
+            tbody.innerHTML += `
+                <tr>
+                    <td style="font-weight: 600;">${student.user.name}</td>
+                    <td>${resScore}/100</td>
+                    <td><span class="badge status-${app.status}">${app.status}</span></td>
+                    <td>
+                        <button class="btn btn-primary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;" onclick="reviewCandidate(${app.id})">Review & Action</button>
+                    </td>
+                </tr>
+            `;
+        });
+    }
+
+    function reviewCandidate(appId) {
+        currentAppId = appId;
+        const app = currentCandidates.find(a => a.id === appId);
+        const student = app.student;
+        const resume = student.resumeProfile;
+
+        document.getElementById('candName').textContent = student.user.name;
+        document.getElementById('candStatus').value = app.status;
+        
+        if (resume && resume.skills) {
+            try {
+                let skillsArr = JSON.parse(resume.skills);
+                document.getElementById('candSkills').innerHTML = skillsArr.map(s => `<span class="tech-badge">${s}</span>`).join('');
+            } catch(e) { document.getElementById('candSkills').textContent = resume.skills; }
+        } else {
+            document.getElementById('candSkills').textContent = "No skills parsed.";
+        }
+
+        document.getElementById('aiMatchContent').style.display = 'none';
+        document.getElementById('runAiBtn').style.display = 'block';
+
+        document.getElementById('candModal').style.display = 'flex';
+    }
+
+    document.getElementById('candStatus').addEventListener('change', async (e) => {
+        if(!currentAppId) return;
+        await fetch(`/api/recruiter/applications/${currentAppId}/status`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: e.target.value })
+        });
+        // Reload list in background
+        const app = currentCandidates.find(a => a.id === currentAppId);
+        viewCandidates(app.jobId, document.getElementById('candJobTitle').textContent.replace('Candidates for: ', ''));
+    });
+
+    document.getElementById('runAiBtn').addEventListener('click', async () => {
+        document.getElementById('runAiBtn').style.display = 'none';
+        document.getElementById('aiLoad').style.display = 'block';
+
+        try {
+            const res = await fetch(`/api/recruiter/candidates/${currentAppId}/match`, { method: 'POST' });
+            const data = await res.json();
+            
+            document.getElementById('aiMatch').innerHTML = data.matchedReqs.map(r => `<li>${r}</li>`).join('');
+            document.getElementById('aiMiss').innerHTML = data.missingReqs.map(r => `<li>${r}</li>`).join('');
+            document.getElementById('aiExp').textContent = data.relevantExp;
+            
+            document.getElementById('aiLoad').style.display = 'none';
+            document.getElementById('aiMatchContent').style.display = 'block';
+        } catch(e) {
+            alert("AI matching failed.");
+            document.getElementById('runAiBtn').style.display = 'block';
+            document.getElementById('aiLoad').style.display = 'none';
+        }
+    });
+
+    init();
+  </script>
+</body>
+</html>
+

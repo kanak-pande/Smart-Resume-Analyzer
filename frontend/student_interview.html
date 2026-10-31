@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PlacementOS - AI Mock Interview</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+</head>
+<body>
+  <div class="bg-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+  </div>
+
+  <div class="layout">
+    <aside class="sidebar">
+        <div class="sidebar-brand">PlacementOS</div>
+        <a href="/student/dashboard" class="nav-item"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+        <a href="/student/readiness" class="nav-item"><i data-lucide="activity"></i> Placement Readiness</a>`n        <a href="/student/resume" class="nav-item"><i data-lucide="file-text"></i> Resume Intelligence</a>
+        <a href="/student/skills" class="nav-item"><i data-lucide="compass"></i> Skill Gap & Roadmap</a>
+        <a href="/student/jobs" class="nav-item"><i data-lucide="briefcase"></i> Job Matches</a>
+        <a href="/student/interview" class="nav-item active"><i data-lucide="mic"></i> Mock Interviews</a>
+        <a href="/student/applications" class="nav-item"><i data-lucide="check-square"></i> Applications</a>
+        <div style="flex: 1;"></div>
+        <a href="#" id="logoutBtn" class="nav-item"><i data-lucide="log-out"></i> Logout</a>
+    </aside>
+    
+    <main class="main-panel">
+        <h2 class="mb-4">AI Interview Preparation</h2>
+        
+        <!-- STEP 1: Config -->
+        <div id="step-config" class="interview-step active card glass">
+            <h3 class="mb-4">Configure Your Interview</h3>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                <div class="input-group">
+                    <label class="input-label">Target Job Role</label>
+                    <input type="text" id="targetJob" class="glass-input" placeholder="e.g. Frontend Developer" value="Software Engineer">
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Interview Type</label>
+                    <select id="interviewType" class="glass-input" style="background: rgba(15, 23, 42, 0.8);">
+                        <option value="Technical">Technical</option>
+                        <option value="HR">HR / Behavioral</option>
+                        <option value="Project">Project Deep Dive</option>
+                        <option value="Resume-based">Resume Walkthrough</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Difficulty</label>
+                    <select id="difficulty" class="glass-input" style="background: rgba(15, 23, 42, 0.8);">
+                        <option value="Easy">Easy</option>
+                        <option value="Medium" selected>Medium</option>
+                        <option value="Hard">Hard</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Number of Questions</label>
+                    <select id="numQuestions" class="glass-input" style="background: rgba(15, 23, 42, 0.8);">
+                        <option value="1">1 (Quick Practice)</option>
+                        <option value="3" selected>3</option>
+                        <option value="5">5</option>
+                    </select>
+                </div>
+            </div>
+            
+            <button class="btn btn-primary" id="startBtn"><i data-lucide="play"></i> Start Interview</button>
+            <p id="loadingMsg" class="text-secondary mt-2" style="display: none;"><i data-lucide="loader" class="spin"></i> AI is generating questions based on your resume...</p>
+        </div>
+
+        <!-- STEP 2: Runtime -->
+        <div id="step-runtime" class="interview-step">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 class="text-secondary">Question <span id="currentQNum">1</span> of <span id="totalQNum">3</span></h3>
+                <span class="tech-badge" style="background: var(--card-bg);" id="qTypeBadge">Technical</span>
+            </div>
+            
+            <div class="card glass mb-4" style="border-left: 4px solid var(--primary-color);">
+                <h2 id="questionText" style="margin-bottom: 0;">Loading question...</h2>
+            </div>
+            
+            <div class="input-group">
+                <label class="input-label">Your Answer</label>
+                <textarea id="answerText" class="glass-input" rows="6" placeholder="Type your answer here as if speaking to an interviewer..."></textarea>
+            </div>
+            
+            <button class="btn btn-primary" id="submitAnswerBtn">Submit Answer & Get Feedback</button>
+            <p id="evalMsg" class="text-secondary mt-2" style="display: none;"><i data-lucide="loader" class="spin"></i> AI is evaluating your response...</p>
+            
+            <div id="feedbackContainer" style="display: none;">
+                <div class="feedback-box">
+                    <h4 style="color: var(--secondary-color); margin-bottom: 0.5rem;">AI Feedback</h4>
+                    <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                        <span class="tech-badge">Relevance: <span id="fbRel">0</span>/100</span>
+                        <span class="tech-badge">Correctness: <span id="fbCor">0</span>/100</span>
+                        <span class="tech-badge">Completeness: <span id="fbCom">0</span>/100</span>
+                    </div>
+                    <p style="font-size: 0.9rem; color: #ef4444; margin-bottom: 0.5rem;"><strong>Missing Points:</strong> <span id="fbMissing">...</span></p>
+                    <p style="font-size: 0.9rem; color: #10b981;"><strong>How to Improve:</strong> <span id="fbImprove">...</span></p>
+                </div>
+                <button class="btn btn-secondary mt-4" id="nextQBtn">Next Question <i data-lucide="arrow-right"></i></button>
+            </div>
+        </div>
+
+        <!-- STEP 3: Summary -->
+        <div id="step-summary" class="interview-step card glass text-center">
+            <h2 class="mb-4">Interview Complete!</h2>
+            <h3 class="text-secondary mb-2">Average Score</h3>
+            <div style="width: 140px; height: 140px; border-radius: 50%; background: conic-gradient(var(--accent-color) 0%, transparent 0); display: flex; align-items: center; justify-content: center; position: relative; margin: 0 auto 2rem auto;" id="finalCircle">
+                <div style="width: 120px; height: 120px; border-radius: 50%; background: var(--card-bg); display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                    <span id="finalScore" style="font-size: 2.2rem; font-weight: 800; color: var(--accent-color);">0%</span>
+                </div>
+            </div>
+            <p class="text-secondary" style="max-width: 600px; margin: 0 auto 2rem auto;">Your interview results have been securely saved. Review your AI feedback and keep practicing to improve your technical communication.</p>
+            <button class="btn btn-primary" onclick="window.location.reload()"><i data-lucide="refresh-cw"></i> Practice Again</button>
+        </div>
+        
+    </main>
+  </div>
+
+  <script>
+    lucide.createIcons();
+    let questions = [];
+    let currentIdx = 0;
+    let interviewData = {
+        type: '', difficulty: '', targetJob: '', results: []
+    };
+
+    document.getElementById('logoutBtn').addEventListener('click', async (e) => {
+        e.preventDefault();
+        await fetch('/api/auth/logout', { method: 'POST' });
+        window.location.href = '/login';
+    });
+    
+    document.getElementById('startBtn').addEventListener('click', async () => {
+        interviewData.targetJob = document.getElementById('targetJob').value;
+        interviewData.type = document.getElementById('interviewType').value;
+        interviewData.difficulty = document.getElementById('difficulty').value;
+        const numQuestions = document.getElementById('numQuestions').value;
+        
+        document.getElementById('startBtn').disabled = true;
+        document.getElementById('loadingMsg').style.display = 'block';
+        
+        try {
+            const res = await fetch('/api/interview/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    targetJob: interviewData.targetJob,
+                    type: interviewData.type,
+                    difficulty: interviewData.difficulty,
+                    numQuestions: parseInt(numQuestions)
+                })
+            });
+            questions = await res.json();
+            
+            document.getElementById('step-config').classList.remove('active');
+            document.getElementById('step-runtime').classList.add('active');
+            
+            document.getElementById('totalQNum').textContent = questions.length;
+            document.getElementById('qTypeBadge').textContent = interviewData.type;
+            
+            loadQuestion();
+        } catch (e) {
+            console.error(e);
+            alert("Failed to generate questions. Please try again.");
+        } finally {
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('loadingMsg').style.display = 'none';
+        }
+    });
+
+    function loadQuestion() {
+        document.getElementById('currentQNum').textContent = currentIdx + 1;
+        document.getElementById('questionText').textContent = questions[currentIdx];
+        document.getElementById('answerText').value = '';
+        document.getElementById('answerText').disabled = false;
+        document.getElementById('submitAnswerBtn').style.display = 'block';
+        document.getElementById('feedbackContainer').style.display = 'none';
+    }
+
+    document.getElementById('submitAnswerBtn').addEventListener('click', async () => {
+        const answer = document.getElementById('answerText').value;
+        if (!answer.trim()) return alert("Please provide an answer.");
+        
+        document.getElementById('submitAnswerBtn').disabled = true;
+        document.getElementById('answerText').disabled = true;
+        document.getElementById('evalMsg').style.display = 'block';
+        
+        try {
+            const res = await fetch('/api/interview/evaluate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    question: questions[currentIdx],
+                    answer
+                })
+            });
+            const feedback = await res.json();
+            
+            interviewData.results.push({
+                question: questions[currentIdx],
+                answer: answer,
+                feedback: feedback
+            });
+
+            document.getElementById('fbRel').textContent = feedback.relevance || 0;
+            document.getElementById('fbCor').textContent = feedback.correctness || 0;
+            document.getElementById('fbCom').textContent = feedback.completeness || 0;
+            document.getElementById('fbMissing').textContent = feedback.missingPoints || 'None';
+            document.getElementById('fbImprove').textContent = feedback.improvements || 'Good job.';
+            
+            document.getElementById('submitAnswerBtn').style.display = 'none';
+            document.getElementById('evalMsg').style.display = 'none';
+            document.getElementById('feedbackContainer').style.display = 'block';
+            
+            if (currentIdx === questions.length - 1) {
+                document.getElementById('nextQBtn').innerHTML = 'Finish Interview <i data-lucide="check"></i>';
+                lucide.createIcons();
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Failed to evaluate answer.");
+            document.getElementById('submitAnswerBtn').disabled = false;
+            document.getElementById('answerText').disabled = false;
+            document.getElementById('evalMsg').style.display = 'none';
+        }
+    });
+
+    document.getElementById('nextQBtn').addEventListener('click', async () => {
+        if (currentIdx < questions.length - 1) {
+            currentIdx++;
+            loadQuestion();
+        } else {
+            // Finish
+            let total = 0;
+            interviewData.results.forEach(r => total += (r.feedback.relevance || 0));
+            const avgScore = Math.round(total / questions.length);
+            
+            document.getElementById('step-runtime').classList.remove('active');
+            document.getElementById('step-summary').classList.add('active');
+            
+            document.getElementById('finalScore').textContent = avgScore + '%';
+            document.getElementById('finalCircle').style.background = `conic-gradient(var(--accent-color) ${avgScore}%, transparent 0)`;
+            
+            // Save to backend
+            try {
+                await fetch('/api/interview/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        type: interviewData.type,
+                        difficulty: interviewData.difficulty,
+                        totalScore: avgScore,
+                        summary: "Completed AI Mock Interview for " + interviewData.targetJob,
+                        questions: interviewData.results
+                    })
+                });
+            } catch (e) { console.error("Error saving interview", e); }
+        }
+    });
+  </script>
+</body>
+</html>
+

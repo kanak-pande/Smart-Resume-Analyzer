@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PlacementOS - Applications</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+</head>
+<body>
+  <div class="bg-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+  </div>
+
+  <div class="layout">
+    <aside class="sidebar">
+        <div class="sidebar-brand">PlacementOS</div>
+        <a href="/student/dashboard" class="nav-item"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+        <a href="/student/readiness" class="nav-item"><i data-lucide="activity"></i> Placement Readiness</a>`n        <a href="/student/resume" class="nav-item"><i data-lucide="file-text"></i> Resume Intelligence</a>
+        <a href="/student/skills" class="nav-item"><i data-lucide="compass"></i> Skill Gap & Roadmap</a>
+        <a href="/student/jobs" class="nav-item"><i data-lucide="briefcase"></i> Job Matches</a>
+        <a href="/student/applications" class="nav-item active"><i data-lucide="check-square"></i> Applications</a>
+        <a href="/student/interview" class="nav-item"><i data-lucide="mic"></i> Mock Interviews</a>
+        <div style="flex: 1;"></div>
+        <a href="#" id="logoutBtn" class="nav-item"><i data-lucide="log-out"></i> Logout</a>
+    </aside>
+    
+    <main class="main-panel">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <h2>Application Tracking</h2>
+        </div>
+        
+        <div class="card glass mb-4" style="display: flex; gap: 1rem; align-items: center;">
+            <div class="input-group" style="margin: 0; flex: 1;">
+                <input type="text" id="searchInput" class="glass-input" placeholder="Search by company or job title...">
+            </div>
+            <div class="input-group" style="margin: 0; width: 200px;">
+                <select id="statusFilter" class="glass-input" style="background: rgba(15, 23, 42, 0.8);">
+                    <option value="ALL">All Statuses</option>
+                    <option value="SAVED">Saved</option>
+                    <option value="APPLIED">Applied</option>
+                    <option value="ASSESSMENT">Assessment</option>
+                    <option value="INTERVIEW">Interview</option>
+                    <option value="SELECTED">Selected</option>
+                    <option value="REJECTED">Rejected</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="applicationsContainer">
+            <p class="text-secondary text-center py-4">Loading applications...</p>
+        </div>
+    </main>
+  </div>
+
+  <!-- Edit Modal -->
+  <div id="editModal" class="modal">
+      <div class="modal-content">
+          <h3 class="mb-4">Update Application</h3>
+          <div class="input-group">
+              <label class="input-label">Status</label>
+              <select id="editStatus" class="glass-input" style="background: var(--card-bg);">
+                  <option value="SAVED">Saved</option>
+                  <option value="APPLIED">Applied</option>
+                  <option value="ASSESSMENT">Assessment</option>
+                  <option value="INTERVIEW">Interview</option>
+                  <option value="SELECTED">Selected</option>
+                  <option value="REJECTED">Rejected</option>
+              </select>
+          </div>
+          <div class="input-group">
+              <label class="input-label">Interview Date (Optional)</label>
+              <input type="date" id="editDate" class="glass-input" style="background: var(--card-bg);">
+          </div>
+          <div class="input-group">
+              <label class="input-label">Notes</label>
+              <textarea id="editNotes" class="glass-input" rows="3" style="background: var(--card-bg);"></textarea>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+              <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+              <button class="btn btn-primary" id="saveUpdateBtn">Save Changes</button>
+          </div>
+      </div>
+  </div>
+
+  <script>
+    lucide.createIcons();
+    
+    document.getElementById('logoutBtn').addEventListener('click', async (e) => {
+        e.preventDefault();
+        await fetch('/api/auth/logout', { method: 'POST' });
+        window.location.href = '/login';
+    });
+
+    let applications = [];
+    let currentEditId = null;
+
+    async function loadApplications() {
+        try {
+            const res = await fetch('/api/applications');
+            applications = await res.json();
+            renderApplications();
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    function renderApplications() {
+        const container = document.getElementById('applicationsContainer');
+        container.innerHTML = '';
+
+        const search = document.getElementById('searchInput').value.toLowerCase();
+        const filter = document.getElementById('statusFilter').value;
+
+        const filtered = applications.filter(app => {
+            const matchSearch = app.job.title.toLowerCase().includes(search) || app.job.company.toLowerCase().includes(search);
+            const matchFilter = filter === 'ALL' || app.status === filter;
+            return matchSearch && matchFilter;
+        });
+
+        if (filtered.length === 0) {
+            container.innerHTML = '<p class="text-secondary text-center py-4">No applications found.</p>';
+            return;
+        }
+
+        filtered.forEach(app => {
+            const appliedDate = new Date(app.appliedAt).toLocaleDateString();
+            const interviewDate = app.interviewDate ? `<p style="font-size: 0.8rem; color: #8b5cf6;"><i data-lucide="calendar" width="12"></i> Interview: ${new Date(app.interviewDate).toLocaleDateString()}</p>` : '';
+            const notes = app.notes ? `<p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.5rem;"><i data-lucide="file-text" width="12"></i> ${app.notes}</p>` : '';
+            
+            container.innerHTML += `
+                <div class="timeline-item">
+                    <div style="flex: 1;">
+                        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.2rem;">
+                            <h3 style="color: var(--primary-color); margin: 0;">${app.job.title}</h3>
+                            <span class="badge status-${app.status}">${app.status}</span>
+                        </div>
+                        <p class="text-secondary" style="font-weight: 500;">${app.job.company} &bull; Applied: ${appliedDate}</p>
+                        ${interviewDate}
+                        ${notes}
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <button class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" onclick="openModal(${app.id})"><i data-lucide="edit-2"></i> Update</button>
+                        <button class="btn" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3);" onclick="deleteApp(${app.id})"><i data-lucide="trash-2"></i> Remove</button>
+                    </div>
+                </div>
+            `;
+        });
+        lucide.createIcons();
+    }
+
+    document.getElementById('searchInput').addEventListener('input', renderApplications);
+    document.getElementById('statusFilter').addEventListener('change', renderApplications);
+
+    function openModal(id) {
+        currentEditId = id;
+        const app = applications.find(a => a.id === id);
+        if (app) {
+            document.getElementById('editStatus').value = app.status;
+            document.getElementById('editDate').value = app.interviewDate ? app.interviewDate.split('T')[0] : '';
+            document.getElementById('editNotes').value = app.notes || '';
+            document.getElementById('editModal').style.display = 'flex';
+        }
+    }
+
+    function closeModal() {
+        document.getElementById('editModal').style.display = 'none';
+        currentEditId = null;
+    }
+
+    document.getElementById('saveUpdateBtn').addEventListener('click', async () => {
+        if (!currentEditId) return;
+        
+        const status = document.getElementById('editStatus').value;
+        const interviewDate = document.getElementById('editDate').value;
+        const notes = document.getElementById('editNotes').value;
+
+        try {
+            await fetch(`/api/applications/${currentEditId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status, notes, interviewDate: interviewDate || null })
+            });
+            closeModal();
+            loadApplications();
+        } catch (e) {
+            console.error(e);
+            alert("Failed to update application");
+        }
+    });
+
+    async function deleteApp(id) {
+        if (!confirm("Are you sure you want to remove this application?")) return;
+        try {
+            await fetch(`/api/applications/${id}`, { method: 'DELETE' });
+            loadApplications();
+        } catch (e) {
+            console.error(e);
+            alert("Failed to delete application");
+        }
+    }
+
+    loadApplications();
+  </script>
+</body>
+</html>
+

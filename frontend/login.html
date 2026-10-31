@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PlacementOS - Login</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+</head>
+<body>
+  <div class="bg-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <div class="app-container">
+    <main class="main-content">
+      <div class="card glass auth-container text-center">
+        <h2 class="mb-4 text-gradient">PlacementOS</h2>
+        <p class="text-secondary mb-4">AI-Powered Campus Placement & Career Intelligence Platform</p>
+        
+        <div id="loginForm">
+            <div class="input-group text-left">
+                <label class="input-label">Email</label>
+                <input type="email" id="email" class="glass-input" placeholder="student@college.edu">
+            </div>
+            <div class="input-group text-left">
+                <label class="input-label">Password</label>
+                <input type="password" id="password" class="glass-input" placeholder="••••••••">
+            </div>
+            <button class="btn btn-primary pulse-btn" id="loginBtn" style="width: 100%; justify-content: center; margin-top: 1rem;">
+                Login
+            </button>
+            <p class="mt-4 text-secondary" style="font-size: 0.9rem;">
+                Don't have an account? <a href="#" id="showRegister" style="color: var(--primary-color);">Register</a>
+            </p>
+        </div>
+
+        <div id="registerForm" style="display: none;">
+            <div class="input-group text-left">
+                <label class="input-label">Role</label>
+                <select id="regRole" class="glass-input">
+                    <option value="STUDENT">Student</option>
+                    <option value="RECRUITER">Recruiter</option>
+                    <option value="COLLEGE_ADMIN">College Admin</option>
+                </select>
+            </div>
+            <div class="input-group text-left">
+                <label class="input-label">Email</label>
+                <input type="email" id="regEmail" class="glass-input" placeholder="user@domain.com">
+            </div>
+            <div class="input-group text-left">
+                <label class="input-label">Password</label>
+                <input type="password" id="regPassword" class="glass-input" placeholder="••••••••">
+            </div>
+            <button class="btn btn-primary" id="registerBtn" style="width: 100%; justify-content: center; margin-top: 1rem;">
+                Register
+            </button>
+            <p class="mt-4 text-secondary" style="font-size: 0.9rem;">
+                Already have an account? <a href="#" id="showLogin" style="color: var(--primary-color);">Login</a>
+            </p>
+        </div>
+
+        <p id="errorMsg" style="color: #ef4444; margin-top: 1rem; display: none;"></p>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    document.getElementById('showRegister').addEventListener('click', (e) => {
+        e.preventDefault();
+        document.getElementById('loginForm').style.display = 'none';
+        document.getElementById('registerForm').style.display = 'block';
+        document.getElementById('errorMsg').style.display = 'none';
+    });
+
+    document.getElementById('showLogin').addEventListener('click', (e) => {
+        e.preventDefault();
+        document.getElementById('registerForm').style.display = 'none';
+        document.getElementById('loginForm').style.display = 'block';
+        document.getElementById('errorMsg').style.display = 'none';
+    });
+
+    document.getElementById('loginBtn').addEventListener('click', async () => {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        
+        try {
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                if (data.role === 'STUDENT') window.location.href = '/student/dashboard';
+                else if (data.role === 'RECRUITER') window.location.href = '/recruiter';
+                else if (data.role === 'COLLEGE_ADMIN') window.location.href = '/admin';
+            } else {
+                document.getElementById('errorMsg').textContent = data.error;
+                document.getElementById('errorMsg').style.display = 'block';
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    });
+
+    document.getElementById('registerBtn').addEventListener('click', async () => {
+        const roleName = document.getElementById('regRole').value;
+        const email = document.getElementById('regEmail').value;
+        const password = document.getElementById('regPassword').value;
+        
+        try {
+            const res = await fetch('/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password, roleName })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                if (data.role === 'STUDENT') window.location.href = '/student/dashboard';
+                else if (data.role === 'RECRUITER') window.location.href = '/recruiter';
+                else if (data.role === 'COLLEGE_ADMIN') window.location.href = '/admin';
+            } else {
+                document.getElementById('errorMsg').textContent = data.error;
+                document.getElementById('errorMsg').style.display = 'block';
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    });
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PlacementOS - College Admin Dashboard</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/recharts/umd/Recharts.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  
+  
+</head>
+<body>
+  <div class="bg-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+  </div>
+
+  <div class="layout">
+    <aside class="sidebar">
+        <div class="sidebar-brand">PlacementOS<br><span style="font-size:0.8rem; color:var(--text-secondary);">College Admin</span></div>
+        <div class="nav-item active" onclick="switchTab('dashboard')"><i data-lucide="layout-dashboard"></i> Overview</div>
+        <div class="nav-item" onclick="switchTab('analytics')"><i data-lucide="bar-chart-2"></i> Skill Gap Analytics</div>
+        <div class="nav-item" onclick="switchTab('drives')"><i data-lucide="briefcase"></i> Placement Drives</div>
+        <div class="nav-item" onclick="switchTab('students')"><i data-lucide="users"></i> Student Database</div>
+        <div style="flex: 1;"></div>
+        <div class="nav-item" id="logoutBtn"><i data-lucide="log-out"></i> Logout</div>
+    </aside>
+    
+    <main class="main-panel">
+        
+        <!-- DASHBOARD -->
+        <div id="view-dashboard" class="view-section active">
+            <h2 class="mb-4">Institution Overview</h2>
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem;">
+                <div class="stat-card">
+                    <h4 class="text-secondary"><i data-lucide="users" width="16"></i> Total Students</h4>
+                    <div class="stat-value" id="statStudents">0</div>
+                </div>
+                <div class="stat-card">
+                    <h4 class="text-secondary"><i data-lucide="calendar" width="16"></i> Active Drives</h4>
+                    <div class="stat-value" id="statDrives" style="color: #f59e0b;">0</div>
+                </div>
+                <div class="stat-card">
+                    <h4 class="text-secondary"><i data-lucide="file-text" width="16"></i> Applications</h4>
+                    <div class="stat-value" id="statApps" style="color: #3b82f6;">0</div>
+                </div>
+                <div class="stat-card">
+                    <h4 class="text-secondary"><i data-lucide="mic" width="16"></i> Interviews</h4>
+                    <div class="stat-value" id="statInts" style="color: #8b5cf6;">0</div>
+                </div>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                <div class="stat-card" style="border-color: #10b981;">
+                    <h4 style="color: #10b981;">Selected</h4>
+                    <div class="stat-value" id="statSel" style="color: #10b981;">0</div>
+                </div>
+                <div class="stat-card" style="border-color: #ef4444;">
+                    <h4 style="color: #ef4444;">Rejected</h4>
+                    <div class="stat-value" id="statRej" style="color: #ef4444;">0</div>
+                </div>
+                <div class="stat-card" style="background: rgba(16, 185, 129, 0.05);">
+                    <h4 style="color: var(--text-primary);">Overall Readiness</h4>
+                    <div class="stat-value" id="statReadiness">...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ANALYTICS -->
+        <div id="view-analytics" class="view-section">
+            <h2 class="mb-4">Skill Gap Analytics</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                <div class="card glass">
+                    <h3 class="mb-4 text-center">Most Common Missing Skills</h3>
+                    <div id="skillsChart" style="width: 100%; height: 300px; display: flex; align-items:center; justify-content:center;">
+                        <span class="text-secondary">Loading charts...</span>
+                    </div>
+                </div>
+                <div class="card glass">
+                    <h3 class="mb-4 text-center">Role-wise Skill Gaps (Demand)</h3>
+                    <div id="rolesChart" style="width: 100%; height: 300px; display: flex; align-items:center; justify-content:center;">
+                        <span class="text-secondary">Loading charts...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PLACEMENT DRIVES -->
+        <div id="view-drives" class="view-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <h2>Placement Drives</h2>
+                <button class="btn btn-primary" onclick="document.getElementById('driveModal').style.display='flex'">+ Create Drive</button>
+            </div>
+            <div class="card glass">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Company / Title</th>
+                            <th>Eligibility (CGPA)</th>
+                            <th>Deadline</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="drivesTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- STUDENTS -->
+        <div id="view-students" class="view-section">
+            <h2 class="mb-4">Student Database</h2>
+            <div class="card glass">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Degree/Dept</th>
+                            <th>Total Apps</th>
+                            <th>Resume ATS Score</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentsTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+  </div>
+
+  <!-- Create Drive Modal -->
+  <div id="driveModal" class="modal">
+      <div class="modal-content">
+          <h3 class="mb-4">Create Placement Drive</h3>
+          <div class="input-group"><label class="input-label">Drive Title</label><input type="text" id="driveTitle" class="glass-input"></div>
+          <div class="input-group"><label class="input-label">Company Name</label><input type="text" id="driveCompany" class="glass-input"></div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="input-group"><label class="input-label">Eligibility CGPA</label><input type="number" step="0.1" id="driveCgpa" class="glass-input"></div>
+              <div class="input-group"><label class="input-label">Eligible Departments</label><input type="text" id="driveDept" class="glass-input" placeholder="e.g. CSE, IT"></div>
+          </div>
+          <div class="input-group"><label class="input-label">Application Deadline</label><input type="date" id="driveDate" class="glass-input"></div>
+          <div style="display: flex; justify-content: space-between;">
+              <button class="btn btn-secondary" onclick="document.getElementById('driveModal').style.display='none'">Cancel</button>
+              <button class="btn btn-primary" id="saveDriveBtn">Create Drive</button>
+          </div>
+      </div>
+  </div>
+
+  <script type="text/babel">
+    const { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } = window.Recharts;
+    
+    function SkillsChart({ data }) {
+        if(!data || data.length === 0) return <div className="text-secondary text-center mt-4">No skill gap data found.</div>;
+        return (
+            <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={data}>
+                    <XAxis dataKey="name" stroke="#9ca3af" />
+                    <YAxis stroke="#9ca3af" allowDecimals={false} />
+                    <Tooltip cursor={{fill: 'rgba(255,255,255,0.05)'}} contentStyle={{backgroundColor: '#0f172a', border: '1px solid #334155'}} />
+                    <Bar dataKey="count" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                </BarChart>
+            </ResponsiveContainer>
+        );
+    }
+    
+    function RolesChart({ data }) {
+        if(!data || data.length === 0) return <div className="text-secondary text-center mt-4">No role gap data found.</div>;
+        return (
+            <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={data}>
+                    <XAxis dataKey="name" stroke="#9ca3af" />
+                    <YAxis stroke="#9ca3af" allowDecimals={false} />
+                    <Tooltip cursor={{fill: 'rgba(255,255,255,0.05)'}} contentStyle={{backgroundColor: '#0f172a', border: '1px solid #334155'}} />
+                    <Bar dataKey="count" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
+                </BarChart>
+            </ResponsiveContainer>
+        );
+    }
+
+    window.renderCharts = function(skillsData, rolesData) {
+        const skillsRoot = ReactDOM.createRoot(document.getElementById('skillsChart'));
+        skillsRoot.render(<SkillsChart data={skillsData} />);
+        
+        const rolesRoot = ReactDOM.createRoot(document.getElementById('rolesChart'));
+        rolesRoot.render(<RolesChart data={rolesData} />);
+    };
+  </script>
+
+  <script>
+    lucide.createIcons();
+
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+        await fetch('/api/auth/logout', { method: 'POST' });
+        window.location.href = '/login';
+    });
+
+    function switchTab(tabId) {
+        document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        document.getElementById(`view-${tabId}`).classList.add('active');
+        event.currentTarget.classList.add('active');
+
+        if(tabId === 'dashboard') loadStats();
+        if(tabId === 'analytics') loadAnalytics();
+        if(tabId === 'drives') loadDrives();
+        if(tabId === 'students') loadStudents();
+    }
+
+    async function loadStats() {
+        try {
+            const res = await fetch('/api/admin/stats');
+            const data = await res.json();
+            document.getElementById('statStudents').textContent = data.students;
+            document.getElementById('statDrives').textContent = data.drives;
+            document.getElementById('statApps').textContent = data.applications;
+            document.getElementById('statInts').textContent = data.interviews;
+            document.getElementById('statSel').textContent = data.selected;
+            document.getElementById('statRej').textContent = data.rejected;
+
+            // Simple readiness heuristic
+            if(data.students > 0) {
+                const readiness = Math.min(100, Math.round(((data.applications + (data.selected * 5)) / data.students) * 20));
+                document.getElementById('statReadiness').textContent = readiness + '%';
+            } else {
+                document.getElementById('statReadiness').textContent = 'N/A';
+            }
+        } catch (e) { console.error(e); }
+    }
+
+    async function loadAnalytics() {
+        try {
+            const res = await fetch('/api/admin/skill-gaps');
+            const data = await res.json();
+            if(window.renderCharts) {
+                window.renderCharts(data.skills, data.roles);
+            }
+        } catch (e) { console.error(e); }
+    }
+
+    async function loadDrives() {
+        try {
+            const res = await fetch('/api/admin/drives');
+            const drives = await res.json();
+            const tbody = document.getElementById('drivesTableBody');
+            tbody.innerHTML = '';
+            if(drives.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-secondary">No active placement drives.</td></tr>';
+                return;
+            }
+            drives.forEach(d => {
+                const deadline = d.deadline ? new Date(d.deadline).toLocaleDateString() : 'No deadline';
+                tbody.innerHTML += `
+                    <tr>
+                        <td style="font-weight:600;">${d.title}<br><span style="font-size:0.8rem; font-weight:normal;" class="text-secondary">${d.company}</span></td>
+                        <td>${d.eligibilityCgpa || 'None'} CGPA<br><span style="font-size:0.8rem;" class="text-secondary">${d.eligibilityDept || 'All'}</span></td>
+                        <td>${deadline}</td>
+                        <td><span style="padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem; background: rgba(16, 185, 129, 0.2); color: #10b981;">${d.status}</span></td>
+                    </tr>
+                `;
+            });
+        } catch (e) { console.error(e); }
+    }
+
+    document.getElementById('saveDriveBtn').addEventListener('click', async () => {
+        const payload = {
+            title: document.getElementById('driveTitle').value,
+            company: document.getElementById('driveCompany').value,
+            eligibilityCgpa: document.getElementById('driveCgpa').value,
+            eligibilityDept: document.getElementById('driveDept').value,
+            deadline: document.getElementById('driveDate').value
+        };
+        try {
+            await fetch('/api/admin/drives', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            document.getElementById('driveModal').style.display = 'none';
+            loadDrives();
+            loadStats();
+        } catch (e) { alert("Failed to create drive."); }
+    });
+
+    async function loadStudents() {
+        try {
+            const res = await fetch('/api/admin/students');
+            const students = await res.json();
+            const tbody = document.getElementById('studentsTableBody');
+            tbody.innerHTML = '';
+            if(students.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-secondary">No registered students.</td></tr>';
+                return;
+            }
+            students.forEach(s => {
+                const score = s.resumeProfile ? s.resumeProfile.atsScore || 'N/A' : 'N/A';
+                tbody.innerHTML += `
+                    <tr>
+                        <td style="font-weight:600;">${s.user.name}<br><span style="font-size:0.8rem; font-weight:normal;" class="text-secondary">${s.user.email}</span></td>
+                        <td>${s.degree || 'N/A'}</td>
+                        <td>${s.applications.length}</td>
+                        <td>${score} / 100</td>
+                        <td><button class="btn btn-secondary" style="padding: 0.3rem 0.6rem; font-size:0.8rem;" onclick="alert('Viewing aggregate profile data only to protect privacy.')">View summary</button></td>
+                    </tr>
+                `;
+            });
+        } catch (e) { console.error(e); }
+    }
+
+    // Init
+    loadStats();
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PlacementOS</title>
+  <link rel="stylesheet" href="/style.css">
+  <!-- Lucide icons via CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- PDF.js and Mammoth for local parsing -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+  <script>
+    if (window['pdfjs-dist/build/pdf']) {
+      window['pdfjs-dist/build/pdf'].GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+    }
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.2/mammoth.browser.min.js"></script>
+</head>
+<body>
+
+
+  <div class="layout">
+    <aside class="sidebar">
+        <div class="sidebar-brand">PlacementOS</div>
+        <a href="/student/dashboard" class="nav-item"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+        <a href="/student/readiness" class="nav-item"><i data-lucide="activity"></i> Placement Readiness</a>
+        <a href="/student/resume" class="nav-item active"><i data-lucide="file-text"></i> Resume Intelligence</a>
+        <a href="/student/skills" class="nav-item"><i data-lucide="compass"></i> Skill Gap & Roadmap</a>
+        <a href="/student/jobs" class="nav-item"><i data-lucide="briefcase"></i> Job Matches</a>
+        <a href="/student/applications" class="nav-item"><i data-lucide="check-square"></i> Applications</a>
+        <a href="/student/interview" class="nav-item"><i data-lucide="mic"></i> Mock Interviews</a>
+        <div style="flex: 1;"></div>
+        <a href="#" id="logoutBtn" class="nav-item"><i data-lucide="log-out"></i> Logout</a>
+    </aside>
+
+    <main class="main-panel">
+      <!-- Sub-Navigation for Resume Analyzer -->
+      <div style="display: flex; gap: 1rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 1rem; margin-bottom: 2rem;">
+        <button class="btn btn-secondary" onclick="showPage('home')">Home</button>
+        <button class="btn btn-secondary" onclick="showPage('analyzer')">Analyzer</button>
+        <button class="btn btn-secondary" onclick="showPage('history')">History & A/B Test</button>
+        <button class="btn btn-secondary" onclick="showPage('about')">About</button>
+        <div style="flex: 1;"></div>
+        <button class="btn btn-secondary" id="settingsToggleBtn" title="Settings"><i data-lucide="settings"></i></button>
+        <button class="btn btn-secondary" id="themeToggleBtn"><i data-lucide="sun" id="themeIcon"></i></button>
+      </div>
+
+      <!-- Home Page -->
+      <section id="home-page" class="page active">
+        <div class="home-container">
+          <section class="hero text-center mb-4 mt-4">
+            <h1 class="hero-title text-gradient" style="font-size: 3.5rem; font-weight: 800; margin-bottom: 1rem;">
+              Elevate Your Resume with PlacementOS
+            </h1>
+            <p class="hero-subtitle text-secondary" style="font-size: 1.2rem; max-width: 600px; margin: 0 auto 2rem auto;">
+              Our Smart Resume Analyzer uses advanced NLP to match your skills against job descriptions, 
+              scoring your resume for ATS systems and suggesting personalized improvements.
+            </p>
+            <button onclick="showPage('analyzer')" class="btn btn-primary pulse-btn" style="padding: 1rem 2rem; font-size: 1.1rem; margin-top: 1.5rem;">
+              <i data-lucide="sparkles"></i> Start Analysis Now
+            </button>
+          </section>
+
+          <div style="margin-top: 5rem; text-align: center;">
+            <h2 class="mb-4">How It Works</h2>
+            <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 2rem;">
+              <div class="step-card">
+                 <div class="step-num">1</div>
+                 <h4 style="margin-top:0.5rem;">Upload Resume</h4>
+                 <p class="text-secondary" style="font-size: 0.9rem; margin-top:0.5rem;">Drop your PDF/DOCX file securely.</p>
+              </div>
+              <div class="step-card">
+                 <div class="step-num">2</div>
+                 <h4 style="margin-top:0.5rem;">AI Analysis</h4>
+                 <p class="text-secondary" style="font-size: 0.9rem; margin-top:0.5rem;">NLP engine extracts key skills and data.</p>
+              </div>
+              <div class="step-card">
+                 <div class="step-num">3</div>
+                 <h4 style="margin-top:0.5rem;">Get Insights</h4>
+                 <p class="text-secondary" style="font-size: 0.9rem; margin-top:0.5rem;">Receive actionable feedback instantly.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stats Bar -->
+          <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 2rem; margin-top: 4rem; padding: 2rem; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-lg);">
+            <div class="text-center">
+              <h2 style="font-size: 2.5rem; font-weight: 900; color: var(--primary-color);">11+</h2>
+              <p class="text-secondary">Analysis Modules</p>
+            </div>
+            <div style="width: 1px; background: var(--glass-border);"></div>
+            <div class="text-center">
+              <h2 style="font-size: 2.5rem; font-weight: 900; color: var(--secondary-color);">50+</h2>
+              <p class="text-secondary">Skills Detected</p>
+            </div>
+            <div style="width: 1px; background: var(--glass-border);"></div>
+            <div class="text-center">
+              <h2 style="font-size: 2.5rem; font-weight: 900; color: var(--accent-color);">100%</h2>
+              <p class="text-secondary">Privacy First</p>
+            </div>
+            <div style="width: 1px; background: var(--glass-border);"></div>
+            <div class="text-center">
+              <h2 style="font-size: 2.5rem; font-weight: 900; color: #f59e0b;">Free</h2>
+              <p class="text-secondary">No Sign-up Needed</p>
+            </div>
+          </div>
+
+          <!-- Feature Highlight Cards -->
+          <div style="margin-top: 4rem;">
+            <h2 class="mb-4 text-center">What You Get</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem;">
+              <div class="card glass" style="border-top: 3px solid var(--primary-color);">
+                <i data-lucide="target" style="color: var(--primary-color); margin-bottom: 1rem;" width="32" height="32"></i>
+                <h3 class="mb-1">Real ATS Score</h3>
+                <p class="text-secondary">Accurate match percentage calculated from the actual extracted text — not a placeholder number.</p>
+              </div>
+              <div class="card glass" style="border-top: 3px solid var(--secondary-color);">
+                <i data-lucide="layers" style="color: var(--secondary-color); margin-bottom: 1rem;" width="32" height="32"></i>
+                <h3 class="mb-1">Skill Gap Analysis</h3>
+                <p class="text-secondary">See exactly which skills you have and what crucial ones are missing from the job description.</p>
+              </div>
+              <div class="card glass" style="border-top: 3px solid var(--accent-color);">
+                <i data-lucide="mic" style="color: var(--accent-color); margin-bottom: 1rem;" width="32" height="32"></i>
+                <h3 class="mb-1">Interview Prep</h3>
+                <p class="text-secondary">Get up to 10 high-probability interview questions generated specifically from your resume skills.</p>
+              </div>
+              <div class="card glass" style="border-top: 3px solid #f59e0b;">
+                <i data-lucide="indian-rupee" style="color: #f59e0b; margin-bottom: 1rem;" width="32" height="32"></i>
+                <h3 class="mb-1">Salary Estimate</h3>
+                <p class="text-secondary">Know your worth — estimated salary in both USD and INR based on your matched role and score.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tech Badge Marquee -->
+          <div style="margin-top: 4rem; overflow: hidden; padding: 1rem 0; border-top: 1px solid var(--glass-border); border-bottom: 1px solid var(--glass-border);">
+            <div style="display: flex; animation: marquee 20s linear infinite; gap: 2rem; width: max-content;">
+              <span class="tech-badge">JavaScript</span>
+              <span class="tech-badge">Python</span>
+              <span class="tech-badge">React</span>
+              <span class="tech-badge">Node.js</span>
+              <span class="tech-badge">AWS</span>
+              <span class="tech-badge">Docker</span>
+              <span class="tech-badge">Machine Learning</span>
+              <span class="tech-badge">SQL</span>
+              <span class="tech-badge">TypeScript</span>
+              <span class="tech-badge">Java</span>
+              <span class="tech-badge">Git</span>
+              <span class="tech-badge">Linux</span>
+              <span class="tech-badge">MongoDB</span>
+              <span class="tech-badge">Kubernetes</span>
+              <!-- Duplicate for seamless loop -->
+              <span class="tech-badge">JavaScript</span>
+              <span class="tech-badge">Python</span>
+              <span class="tech-badge">React</span>
+              <span class="tech-badge">Node.js</span>
+              <span class="tech-badge">AWS</span>
+              <span class="tech-badge">Docker</span>
+              <span class="tech-badge">Machine Learning</span>
+              <span class="tech-badge">SQL</span>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Analyzer Page -->
+      <section id="analyzer-page" class="page" style="display: none; max-width: 800px; margin: 0 auto;">
+        <div class="text-center mb-4 mt-4">
+          <h2>Resume Analyzer</h2>
+          <p class="text-secondary">Upload your resume and paste the job description to get instant AI feedback.</p>
+        </div>
+
+        <div class="card glass">
+          <form id="analyzeForm">
+            <div class="input-group">
+              <label class="input-label">1. Upload Resume (PDF or DOCX)</label>
+              <div class="upload-zone" id="uploadZone">
+                <i data-lucide="upload-cloud" width="48" height="48" style="color: var(--primary-color); margin-bottom: 1rem; pointer-events: none;"></i>
+                <h4 id="fileNameDisplay">Drag & Drop your resume here</h4>
+                <p class="text-secondary" style="font-size: 0.9rem;">or click to browse files</p>
+                <input type="file" id="fileUpload" accept=".pdf,.docx" style="display: none;" />
+              </div>
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">2. Paste Job Description (Optional but recommended)</label>
+              <div style="position: relative;">
+                <i data-lucide="file-text" style="position: absolute; top: 1rem; left: 1rem; color: var(--text-secondary);"></i>
+                <textarea id="jobDescInput" class="glass-input" rows="6" placeholder="Paste the target job description here for accurate ATS scoring..." style="padding-left: 3rem; resize: vertical;"></textarea>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;" id="analyzeBtn">
+              <i data-lucide="send"></i> <span id="btnText">Analyze Resume</span>
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <!-- Dashboard Page -->
+      <section id="dashboard-page" class="page" style="display: none; max-width: 1100px; margin: 0 auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; margin-top: 2rem;">
+          <h2>Analysis Results</h2>
+          <button class="btn btn-secondary" onclick="window.print()">
+            <i data-lucide="download"></i> Download Report
+          </button>
+        </div>
+
+        <!-- ROW 1: EXPLAINABLE ATS SCORE -->
+        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+          <!-- 1. ATS Score Ring -->
+          <div class="card glass text-center" style="display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative;">
+            <h3 class="mb-2">1. ATS Match Score</h3>
+            <div id="scoreCircle" style="width: 140px; height: 140px; border-radius: 50%; background: conic-gradient(var(--secondary-color) 78%, transparent 0); display: flex; align-items: center; justify-content: center; position: relative; margin-bottom: 1rem;">
+              <div style="width: 120px; height: 120px; border-radius: 50%; background: var(--card-bg); display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                <span id="scoreText" style="font-size: 2.2rem; font-weight: 800; color: var(--secondary-color);">0%</span>
+              </div>
+            </div>
+            <p class="text-secondary mb-1">Estimated Rating: <strong id="ratingText">Pending</strong></p>
+            <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 1rem;">*This is an estimated, explainable match score, not a confidential proprietary algorithm.</p>
+          </div>
+
+          <!-- 2. Explainable Score Breakdown -->
+          <div class="card glass">
+            <h3 class="mb-2">2. Explainable Score Breakdown</h3>
+            <div id="explainableScoreBreakdown" style="display: flex; flex-direction: column; gap: 1rem; max-height: 250px; overflow-y: auto; padding-right: 0.5rem;">
+               <!-- Progress bars will be injected here -->
+            </div>
+          </div>
+        </div>
+
+        <!-- ROW 1.5: JD PRIORITY ANALYZER -->
+        <div class="card glass mb-4" id="jdPrioritySection" style="display: none; margin-bottom: 1.5rem; border-left: 4px solid var(--accent-color);">
+          <h3 class="mb-2" style="display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="target" color="var(--accent-color)"></i> 3. Job Description Priority Analyzer</h3>
+          <p class="text-secondary" style="font-size: 0.9rem; margin-bottom: 1rem;">AI has extracted and categorized the requirements from the Job Description.</p>
+          <div id="jdPriorityContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+              <!-- JD Categories injected here -->
+          </div>
+        </div>
+
+        <!-- ROW 1.75: ATS SIMULATION (Phase 9) -->
+        <div class="card glass mb-4" id="atsSimulationSection" style="margin-bottom: 1.5rem;">
+          <h3 class="mb-2" style="display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="eye" color="#3b82f6"></i> 4. ATS Simulation Viewer</h3>
+          <p class="text-secondary" style="font-size: 0.9rem; margin-bottom: 1rem;">This is exactly how a robotic ATS parser reads your resume (raw text). If contact info is missing, your format might be breaking the parser.</p>
+          
+          <div style="display: grid; grid-template-columns: 3fr 1fr; gap: 1.5rem;">
+            <!-- Raw Text Viewer -->
+            <div style="background: rgba(0,0,0,0.2); border-radius: var(--radius-sm); border: 1px solid var(--glass-border); display: flex; flex-direction: column;">
+               <div style="padding: 0.5rem 1rem; border-bottom: 1px solid var(--glass-border); font-family: monospace; font-size: 0.8rem; color: var(--text-secondary); display: flex; justify-content: space-between;">
+                  <span>raw_parsed_text.txt</span>
+                  <span id="wordCountBadge">0 words</span>
+               </div>
+               <div id="atsRawText" style="padding: 1rem; font-family: monospace; font-size: 0.85rem; color: #e2e8f0; max-height: 250px; overflow-y: auto; white-space: pre-wrap; word-break: break-word;">
+                  Loading raw text...
+               </div>
+            </div>
+            
+            <!-- Flags / Warnings -->
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+               <div class="card" style="background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); padding: 1rem;">
+                   <h4 style="margin-bottom: 0.8rem; font-size: 0.9rem;">Essential Fields</h4>
+                   <ul id="atsFlagsList" style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 0.5rem;">
+                      <span class="text-secondary">Scanning...</span>
+                   </ul>
+               </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ROW 2: SEMANTIC SKILLS -->
+        <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+          
+          <!-- 5. Semantic Skill Matching -->
+          <div class="card glass">
+            <h3 class="mb-2" style="display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="brain-circuit" color="var(--primary-color)"></i> 5. Semantic Skill Matching</h3>
+            <p class="text-secondary" style="font-size: 0.85rem; margin-bottom: 1rem;">AI meaning-based mapping of your skills vs JD requirements.</p>
+            <div id="semanticSkillsContainer" style="display: flex; flex-direction: column; gap: 0.75rem;">
+               <!-- Semantic skills injected here -->
+               <span class="text-secondary">Loading semantic analysis...</span>
+            </div>
+            
+            <h4 class="mt-4 mb-2" style="font-size: 0.9rem; color: #ef4444;"><i data-lucide="alert-circle" width="14" style="vertical-align: middle;"></i> Missing Critical Skills</h4>
+            <div id="missingSkills" style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+            </div>
+          </div>
+
+        </div>
+
+
+
+        <!-- ROW 3: GRAMMAR & FORMAT -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
+          <!-- 6. Grammar & Content -->
+          <div class="card glass">
+            <h3 class="mb-2" style="display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="file-edit" color="#f59e0b"></i> 6. Grammar & Content</h3>
+            <ul id="grammarList" style="list-style: none;">
+            </ul>
+          </div>
+
+          <!-- 7. Format Checker -->
+          <div class="card glass">
+            <h3 class="mb-2" style="display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="layout-template" color="var(--primary-color)"></i> 7. Resume Format Check</h3>
+            <ul id="formatList" style="list-style: none; display: flex; flex-direction: column; gap: 0.8rem;">
+            </ul>
+          </div>
+        </div>
+
+        <!-- ROW 4: KEYWORDS & ROLES -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
+          <!-- 8. Keyword Density -->
+          <div class="card glass">
+            <h3 class="mb-2" style="display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="bar-chart-2" color="var(--accent-color)"></i> 8. Top Keywords Density</h3>
+            <div id="keywordDensityList" style="display: flex; flex-direction: column; gap: 0.5rem;">
+            </div>
+          </div>
+
+          <!-- 9. Recommend Roles -->
+          <div class="card glass">
+             <h3 class="mb-2" style="display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="briefcase" color="var(--primary-color)"></i> 9. Recommend Roles</h3>
+             <div id="rolesContainer" style="display: flex; flex-direction: column; gap: 0.8rem; width: 100%;">
+             </div>
+          </div>
+        </div>
+
+        <!-- ROW 5: INTERVIEW QUESTIONS & PACKAGE -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
+          <!-- 10. Interview Intelligence -->
+          <div class="card glass">
+             <h3 class="mb-2" style="display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="mic" color="var(--accent-color)"></i> 10. Interview Intelligence</h3>
+             <p class="text-secondary" style="font-size: 0.9rem; margin-bottom: 1rem;">AI-generated questions tailored specifically to claims in your resume.</p>
+             <div id="interviewQuestionsList" style="display: flex; flex-direction: column; gap: 1rem;">
+                <span class="text-secondary">Loading interview intelligence...</span>
+             </div>
+          </div>
+
+          <!-- 11. Estimated Package -->
+          <div class="card glass text-center" style="display: flex; flex-direction: column; justify-content: center; align-items: center;">
+             <div class="icon-wrapper mb-2" style="color: #f59e0b; background: rgba(245, 158, 11, 0.1); width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                 <i data-lucide="dollar-sign" width="32" height="32"></i>
+             </div>
+             <h3 class="mb-1">11. Estimated Package</h3>
+             <p class="text-secondary mb-2" style="font-size: 0.9rem;">Market expectation for your profile</p>
+             <h2 id="packageTextUSD" style="color: #f59e0b; font-size: 1.8rem; font-weight: 800;">$0K - $0K</h2>
+             <div style="width: 50%; height: 1px; background: rgba(255,255,255,0.1); margin: 1rem 0;"></div>
+             <h2 id="packageTextINR" style="color: #10b981; font-size: 1.6rem; font-weight: 700;">₹ 0L - ₹ 0L</h2>
+          </div>
+        </div>
+
+        <!-- ROW 5.5: JOB RISK ASSESSMENT (Phase 8) -->
+        <div class="card glass mb-4" style="border-top: 3px solid #ef4444;">
+          <h3 class="mb-2" style="display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="shield-alert" color="#ef4444"></i> 12. Job Risk & Mismatch Assessment</h3>
+          <p class="text-secondary" style="font-size: 0.9rem; margin-bottom: 1rem;">Analyzes if you are underqualified or overqualified based on actual responsibilities vs job title.</p>
+          <div id="jobRiskContainer" style="display: flex; flex-direction: column; gap: 1rem;">
+             <span class="text-secondary">Loading risk assessment...</span>
+          </div>
+        </div>
+
+        <!-- ROW 6: AI LEARNING ROADMAP (Phase 6) -->
+        <div class="card glass mb-4">
+          <h3 class="mb-2" style="display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="map" color="var(--primary-color)"></i> 13. AI Learning Roadmap</h3>
+          <p class="text-secondary" style="font-size: 0.9rem; margin-bottom: 1.5rem;">A personalized path to acquire your missing target skills based on your current experience level.</p>
+          <div id="roadmapContainer" style="display: flex; flex-direction: column; gap: 0; position: relative;">
+             <!-- Stepped timeline injected here -->
+             <span class="text-secondary">Loading AI roadmap...</span>
+          </div>
+        </div>
+
+        <!-- ROW 7: ACTION VERBS & BUZZWORDS -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
+          <div class="card glass">
+            <h3 class="mb-2" style="display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="zap" color="#10b981"></i> 14. Action Verbs & Impact Score</h3>
+            <p class="text-secondary" style="font-size: 0.9rem; margin-bottom: 1rem;">Strong verbs and quantifiable metrics make your resume stand out.</p>
+            <div id="impactMetrics" style="display: flex; flex-direction: column; gap: 0.8rem;">
+            </div>
+          </div>
+
+          <div class="card glass">
+            <h3 class="mb-2" style="display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="alert-triangle" color="#ef4444"></i> 15. Overused Buzzwords</h3>
+            <p class="text-secondary" style="font-size: 0.9rem; margin-bottom: 1rem;">Consider replacing these clichés with concrete achievements.</p>
+            <div id="buzzwordList" style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+            </div>
+          </div>
+        </div>
+
+        <!-- ROW 8: LIVE JOBS MATCH -->
+        <div class="card glass mb-4" style="margin-bottom: 1.5rem;">
+          <h3 class="mb-2" style="display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="external-link" color="#3b82f6"></i> 16. Smart Job Search</h3>
+          <p class="text-secondary" style="font-size: 0.9rem; margin-bottom: 1rem;">Explore active job postings matching your profile.</p>
+          <div id="jobLinksContainer" style="display: flex; flex-wrap: wrap; gap: 1rem;">
+          </div>
+        </div>
+
+        <!-- ROW 9: AI TOOLS (COVER LETTER & REWRITER) -->
+        <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+          <div class="card glass">
+            <h3 class="mb-2" style="display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="sparkles" color="#8b5cf6"></i> 17. AI Copilot (Powered by Gemini)</h3>
+            <p class="text-secondary" style="font-size: 0.9rem; margin-bottom: 1rem;">Generate tailored content based on your resume and job description.</p>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+              <!-- Cover letter -->
+              <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: var(--radius-sm);">
+                <h4 style="margin-bottom: 0.5rem;">Cover Letter Generator</h4>
+                <button class="btn btn-secondary" id="generateCoverLetterBtn" style="width: 100%; justify-content: center; margin-bottom: 1rem;">
+                  <i data-lucide="file-text"></i> Generate Cover Letter
+                </button>
+                <div id="coverLetterResult" style="display: none; background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 4px; font-size: 0.9rem; max-height: 250px; overflow-y: auto; white-space: pre-wrap;"></div>
+              </div>
+
+              <!-- Bullet Rewriter -->
+              <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: var(--radius-sm);">
+                <h4 style="margin-bottom: 0.5rem;">Bullet Point Rewriter</h4>
+                <textarea id="bulletInput" class="glass-input mb-2" rows="2" placeholder="Paste a weak bullet point here..."></textarea>
+                <button class="btn btn-secondary" id="rewriteBulletBtn" style="width: 100%; justify-content: center; margin-bottom: 1rem;">
+                  <i data-lucide="edit-3"></i> AI Rewrite (STAR Method)
+                </button>
+                <div id="rewriteResult" style="display: none; background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 4px; font-size: 0.9rem; max-height: 150px; overflow-y: auto; white-space: pre-wrap; color: var(--accent-color);"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- History & A/B Testing Page -->
+      <section id="history-page" class="page" style="display: none; max-width: 1000px; margin: 0 auto; padding-top: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+          <h2>Resume Analysis History</h2>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
+          <!-- History List -->
+          <div class="card glass">
+            <h3 class="mb-2" style="display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="history" color="var(--primary-color)"></i> Past Versions</h3>
+            <p class="text-secondary" style="font-size: 0.85rem; margin-bottom: 1rem;">Select two versions to compare.</p>
+            <div id="historyListContainer" style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 400px; overflow-y: auto;">
+                <span class="text-secondary">No history found.</span>
+            </div>
+            <button id="compareBtn" class="btn btn-primary" style="width: 100%; margin-top: 1rem;" disabled>Compare Selected (0/2)</button>
+          </div>
+
+          <!-- A/B Comparison View -->
+          <div class="card glass">
+            <h3 class="mb-2" style="display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="split-square-horizontal" color="var(--accent-color)"></i> A/B Comparison</h3>
+            <div id="comparisonContainer" style="display: flex; flex-direction: column; gap: 1rem;">
+               <div class="text-secondary text-center" style="padding: 3rem 0;">Select exactly two versions from the left panel and click Compare.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- About Page -->
+      <section id="about-page" class="page" style="display: none; max-width: 900px; margin: 0 auto;">
+        <div class="text-center mt-4 mb-4">
+          <h1 class="text-gradient" style="font-size: 3rem; font-weight: 800;">Behind the AI</h1>
+          <p class="text-secondary" style="font-size: 1.1rem;">Engineering the future of career advancement.</p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+            <div class="card glass">
+              <h3 class="mb-2" style="display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="cpu" color="var(--primary-color)"></i> Core Engine</h3>
+              <p class="text-secondary mb-4">
+                Smart Resume Analyzer utilizes deterministic NLP extraction combined with matching algorithms to accurately evaluate professional documents. Say goodbye to black-box candidate rejection.
+              </p>
+              <ul style="list-style: none; padding: 0; display:flex; flex-direction:column; gap:0.5rem;">
+                <li style="display: flex; gap: 0.5rem;"><i data-lucide="check" color="#10b981"></i> 100% Client-side privacy execution</li>
+                <li style="display: flex; gap: 0.5rem;"><i data-lucide="check" color="#10b981"></i> PDF.js & Mammoth DOCX Data Parsing</li>
+                <li style="display: flex; gap: 0.5rem;"><i data-lucide="check" color="#10b981"></i> Direct ATS compatibility testing</li>
+              </ul>
+            </div>
+
+            <div class="card glass">
+              <h3 class="mb-2" style="display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="code" color="var(--accent-color)"></i> Tech Stack</h3>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: var(--radius-sm); text-align: center;">
+                  <h4 style="color: var(--primary-color);">Vanilla JS</h4>
+                  <span class="text-secondary" style="font-size:0.8rem;">Core Logic</span>
+                </div>
+                <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: var(--radius-sm); text-align: center;">
+                  <h4 style="color: #f59e0b;">Chart.js</h4>
+                  <span class="text-secondary" style="font-size:0.8rem;">Visualizations</span>
+                </div>
+                <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: var(--radius-sm); text-align: center;">
+                  <h4 style="color: #10b981;">Lucide</h4>
+                  <span class="text-secondary" style="font-size:0.8rem;">Scalable Icons</span>
+                </div>
+                <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: var(--radius-sm); text-align: center;">
+                  <h4 style="color: var(--accent-color);">CSS3</h4>
+                  <span class="text-secondary" style="font-size:0.8rem;">Glassmorphism UI</span>
+                </div>
+              </div>
+            </div>
+        </div>
+
+        <!-- Key Features Timeline -->
+        <div style="margin-top: 2rem;">
+          <h2 class="text-center mb-4">Key Capabilities</h2>
+          <div style="display: flex; flex-direction: column; gap: 1rem; position: relative; padding-left: 2rem; border-left: 2px solid var(--primary-color);">
+            <div style="position: relative;">
+              <div style="position: absolute; left: -2.5rem; width: 16px; height: 16px; border-radius: 50%; background: var(--primary-color); top: 4px;"></div>
+              <h4>Resume Text Extraction</h4>
+              <p class="text-secondary" style="font-size: 0.9rem;">PDF.js and Mammoth.js parse your uploaded documents entirely in the browser — no server, no data leakage.</p>
+            </div>
+            <div style="position: relative;">
+              <div style="position: absolute; left: -2.5rem; width: 16px; height: 16px; border-radius: 50%; background: var(--secondary-color); top: 4px;"></div>
+              <h4>Intelligent Skill Matching</h4>
+              <p class="text-secondary" style="font-size: 0.9rem;">A curated skill database of 40+ modern technologies is cross-referenced against your resume and job description.</p>
+            </div>
+            <div style="position: relative;">
+              <div style="position: absolute; left: -2.5rem; width: 16px; height: 16px; border-radius: 50%; background: var(--accent-color); top: 4px;"></div>
+              <h4>ATS Score Algorithm</h4>
+              <p class="text-secondary" style="font-size: 0.9rem;">Score is calculated as (Matched Skills / Total Job Skills) × 100 with bonus points for extra tech breadth.</p>
+            </div>
+            <div style="position: relative;">
+              <div style="position: absolute; left: -2.5rem; width: 16px; height: 16px; border-radius: 50%; background: #f59e0b; top: 4px;"></div>
+              <h4>Salary Package Estimation</h4>
+              <p class="text-secondary" style="font-size: 0.9rem;">Compensation ranges are derived from industry benchmarks for your matched role, scaled by your ATS score multiplier.</p>
+            </div>
+            <div style="position: relative;">
+              <div style="position: absolute; left: -2.5rem; width: 16px; height: 16px; border-radius: 50%; background: #ef4444; top: 4px;"></div>
+              <h4>Interview Question Generator</h4>
+              <p class="text-secondary" style="font-size: 0.9rem;">Up to 10 role-specific and skill-specific questions are generated dynamically from your matched and missing skills.</p>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settingsModal" class="modal" style="display: none; position: fixed; inset: 0; z-index: 1000; align-items: center; justify-content: center; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);">
+    <div class="card glass" style="width: 100%; max-width: 500px; margin: 1rem; position: relative;">
+      <button id="closeSettingsBtn" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--text-secondary); cursor: pointer;">
+        <i data-lucide="x"></i>
+      </button>
+      <h3 class="mb-4 text-center">App Settings</h3>
+      <div class="input-group">
+        <label class="input-label">Google Gemini API Key (Required for AI features)</label>
+        <p class="text-secondary mb-2" style="font-size: 0.8rem;">Your key is stored securely in your browser's local storage.</p>
+        <input type="password" id="geminiApiKeyInput" class="glass-input" placeholder="AIzaSy..." />
+      </div>
+      <button class="btn btn-primary" id="saveSettingsBtn" style="width: 100%; justify-content: center; margin-top: 1rem;">
+        <i data-lucide="save"></i> Save Settings
+      </button>
+    </div>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
+

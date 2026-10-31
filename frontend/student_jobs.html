@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PlacementOS - Job Discovery</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+</head>
+<body>
+  <div class="bg-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+  </div>
+
+  <div class="layout">
+    <aside class="sidebar">
+        <div class="sidebar-brand">PlacementOS</div>
+        <a href="/student/dashboard" class="nav-item"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+        <a href="/student/readiness" class="nav-item"><i data-lucide="activity"></i> Placement Readiness</a>`n        <a href="/student/resume" class="nav-item"><i data-lucide="file-text"></i> Resume Intelligence</a>
+        <a href="/student/skills" class="nav-item"><i data-lucide="compass"></i> Skill Gap & Roadmap</a>
+        <a href="/student/jobs" class="nav-item active"><i data-lucide="briefcase"></i> Job Matches</a>
+        <a href="/student/applications" class="nav-item"><i data-lucide="check-square"></i> Applications</a>
+        <a href="/student/interview" class="nav-item"><i data-lucide="mic"></i> Mock Interviews</a>
+        <div style="flex: 1;"></div>
+        <a href="#" id="logoutBtn" class="nav-item"><i data-lucide="log-out"></i> Logout</a>
+    </aside>
+    
+    <main class="main-panel">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <h2>Job Discovery</h2>
+            <input type="text" class="glass-input" placeholder="Search jobs..." style="width: 300px;" id="searchInput">
+        </div>
+        
+        <div id="jobsContainer" style="display: flex; flex-direction: column; gap: 1rem;">
+            <p class="text-secondary text-center py-4">Loading open roles...</p>
+        </div>
+    </main>
+  </div>
+
+  <script>
+    lucide.createIcons();
+    document.getElementById('logoutBtn').addEventListener('click', async (e) => {
+        e.preventDefault();
+        await fetch('/api/auth/logout', { method: 'POST' });
+        window.location.href = '/login';
+    });
+
+    async function loadJobs() {
+        try {
+            const res = await fetch('/api/jobs');
+            const jobs = await res.json();
+            const container = document.getElementById('jobsContainer');
+            container.innerHTML = '';
+            
+            if (jobs.length === 0) {
+                container.innerHTML = '<p class="text-secondary text-center py-4">[Empty State] No jobs posted by recruiters yet.</p>';
+                return;
+            }
+
+            jobs.forEach(job => {
+                const reqSkills = JSON.parse(job.requiredSkills || "[]").slice(0, 3).join(', ');
+                container.innerHTML += `
+                    <div class="card glass job-card">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <div>
+                                <h3 style="color: var(--primary-color);">${job.title}</h3>
+                                <p class="text-secondary" style="font-weight: 500;">${job.company} &bull; ${job.location || 'Remote'} &bull; ${job.employmentType || 'Full-time'}</p>
+                                <p style="font-size: 0.9rem; margin-top: 0.5rem; max-width: 600px;">${job.description.substring(0, 100)}...</p>
+                                <p style="font-size: 0.8rem; margin-top: 0.5rem; color: var(--accent-color);">Required: ${reqSkills}</p>
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                <a href="/student/jobs/${job.id}" class="btn btn-primary" style="font-size: 0.9rem;"><i data-lucide="zap"></i> Analyze Match</a>
+                                <button class="btn btn-secondary" style="font-size: 0.9rem;" onclick="saveJob(${job.id})"><i data-lucide="bookmark"></i> Save</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            lucide.createIcons();
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    function saveJob(id) {
+        alert("Job saved successfully!");
+    }
+
+    loadJobs();
+  </script>
+</body>
+</html>
+

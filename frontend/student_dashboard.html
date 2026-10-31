@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PlacementOS - Student Dashboard</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+</head>
+<body>
+  <div class="bg-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+  </div>
+
+  <div class="layout">
+    <aside class="sidebar">
+        <div class="sidebar-brand">PlacementOS</div>
+        <a href="/student/dashboard" class="nav-item active"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+        <a href="/student/readiness" class="nav-item"><i data-lucide="activity"></i> Placement Readiness</a>`n        <a href="/student/resume" class="nav-item"><i data-lucide="file-text"></i> Resume Intelligence</a>
+        <a href="/student/skills" class="nav-item"><i data-lucide="compass"></i> Skill Gap & Roadmap</a>
+        <a href="/student/jobs" class="nav-item"><i data-lucide="briefcase"></i> Job Matches</a>
+        <a href="/student/applications" class="nav-item"><i data-lucide="check-square"></i> Applications</a>
+        <a href="/student/interview" class="nav-item"><i data-lucide="mic"></i> Mock Interviews</a>
+        <div style="flex: 1;"></div>
+        <a href="#" id="logoutBtn" class="nav-item"><i data-lucide="log-out"></i> Logout</a>
+    </aside>
+    
+    <main class="main-panel">
+        <h2 class="mb-4">Student Placement Readiness</h2>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+            <div class="card glass text-center">
+                <h3 class="text-secondary mb-2">Resume Score</h3>
+                <h2 style="color: var(--secondary-color); font-size: 2.5rem;">--%</h2>
+                <p style="font-size: 0.8rem;" class="text-secondary">Analyze your resume to get a score.</p>
+            </div>
+            <div class="card glass text-center">
+                <h3 class="text-secondary mb-2">Readiness Indicator</h3>
+                <h2 style="color: var(--accent-color); font-size: 2.5rem;">Incomplete</h2>
+                <p style="font-size: 0.8rem;" class="text-secondary">Not a prediction of hiring.</p>
+            </div>
+            <div class="card glass text-center">
+                <h3 class="text-secondary mb-2">Skill Match</h3>
+                <h2 style="color: #f59e0b; font-size: 2.5rem;">--</h2>
+                <p style="font-size: 0.8rem;" class="text-secondary">No target role selected.</p>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+            <div class="card glass">
+                <h3 class="mb-4" style="display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="target" color="var(--primary-color)"></i> Skill Gaps</h3>
+                <div class="text-center text-secondary py-4">
+                    [Empty State] Complete a resume analysis to identify skill gaps.
+                </div>
+            </div>
+            <div class="card glass">
+                <h3 class="mb-4" style="display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="check-square" color="var(--accent-color)"></i> Application Overview</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="text-center" style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px;">
+                        <h4 class="text-secondary" style="font-size: 0.8rem;">Total</h4>
+                        <h2 id="statTotal" style="color: var(--text-primary);">0</h2>
+                    </div>
+                    <div class="text-center" style="background: rgba(59, 130, 246, 0.1); padding: 1rem; border-radius: 8px;">
+                        <h4 style="font-size: 0.8rem; color: #3b82f6;">Active</h4>
+                        <h2 id="statActive" style="color: #3b82f6;">0</h2>
+                    </div>
+                    <div class="text-center" style="background: rgba(139, 92, 246, 0.1); padding: 1rem; border-radius: 8px;">
+                        <h4 style="font-size: 0.8rem; color: #8b5cf6;">Interviews</h4>
+                        <h2 id="statInterviews" style="color: #8b5cf6;">0</h2>
+                    </div>
+                    <div class="text-center" style="background: rgba(16, 185, 129, 0.1); padding: 1rem; border-radius: 8px;">
+                        <h4 style="font-size: 0.8rem; color: #10b981;">Selected</h4>
+                        <h2 id="statSelected" style="color: #10b981;">0</h2>
+                    </div>
+                </div>
+                <div class="text-center mt-4">
+                    <a href="/student/applications" class="btn btn-secondary" style="width: 100%; justify-content: center;">Manage Applications</a>
+                </div>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+            <div class="card glass">
+                <h3 class="mb-4" style="display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="briefcase" color="var(--secondary-color)"></i> Recommended Jobs</h3>
+                <div class="text-center text-secondary py-4">
+                    [Empty State] No job matches yet.
+                </div>
+            </div>
+            <div class="card glass">
+                <h3 class="mb-4" style="display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="mic" color="#f59e0b"></i> Interview Preparation</h3>
+                <div class="text-center text-secondary py-4">
+                    [Empty State] No upcoming interviews. Practice with AI!
+                </div>
+            </div>
+        </div>
+    </main>
+  </div>
+
+  <script>
+    lucide.createIcons();
+    document.getElementById('logoutBtn').addEventListener('click', async (e) => {
+        e.preventDefault();
+        await fetch('/api/auth/logout', { method: 'POST' });
+        window.location.href = '/login';
+    });
+
+    async function loadStats() {
+        try {
+            const res = await fetch('/api/applications/stats');
+            if (res.ok) {
+                const stats = await res.json();
+                document.getElementById('statTotal').textContent = stats.total;
+                document.getElementById('statActive').textContent = stats.active;
+                document.getElementById('statInterviews').textContent = stats.interviews;
+                document.getElementById('statSelected').textContent = stats.selected;
+            }
+        } catch (e) { console.error(e); }
+    }
+    loadStats();
+  </script>
+</body>
+</html>
+
